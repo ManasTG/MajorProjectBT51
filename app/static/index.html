@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>ECG Monitor</title>
+        <style>
+:root{--ink:#14232b;--muted:#5d6f78;--line:#d5dde1;--bg:#f4f7f8;--card:#fff;--low:#1f7a4d;--mod:#b86e00;--high:#b3261e;--trace:#0e3a4a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+header{padding:20px 28px;border-bottom:1px solid var(--line);background:var(--card)}h1{margin:0;font-size:20px}header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:16px}
+section{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
+h2{margin:0 0 10px;font-size:15px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input,select,button{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:#fff}
+button{background:var(--ink);color:#fff;border-color:var(--ink);cursor:pointer}button.alt{background:#fff;color:var(--ink)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--trace);outline-offset:2px}
+#chart{width:100%;height:220px;display:block;border:1px solid #ecc;border-radius:4px;background-color:#fff;
+background-image:linear-gradient(#f3d3d3 1px,transparent 1px),linear-gradient(90deg,#f3d3d3 1px,transparent 1px);background-size:20px 20px}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin:12px 0}.stats b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.stats span{color:var(--muted);font-size:13px}
+#risk{font-weight:700}.Low{color:var(--low)}.Moderate{color:var(--mod)}.High{color:var(--high)}
+.alert{border-left:4px solid var(--high);background:#fdf0ef;padding:8px 12px;margin:8px 0;border-radius:0 4px 4px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.note{color:var(--muted);font-size:12.5px}.err{color:var(--high)}
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>ECG arrhythmia monitor</h1>
+            <p>Screening and monitoring aid. It does not diagnose; see a doctor about any alert.</p>
+        </header>
+        <main>
+            <section>
+                <h2>Patient</h2>
+                <div class="row">
+                    <select id="pat" aria-label="Patient"></select> <input id="name" placeholder="Full name" aria-label="Name"><input id="age" type="number" min="0" max="120" placeholder="Age" style="width:80px" aria-label="Age"> <button class="alt" id="add">Add patient</button>
+                </div>
+            </section>
+            <section>
+                <h2>Analyse an ECG</h2>
+                <div class="row">
+                    <input type="file" id="file" accept=".csv,.txt" aria-label="ECG CSV"><input id="fs" type="number" value="360" style="width:90px" aria-label="Sampling rate in Hz"><span class="note">Hz, one value per line</span> <button id="go">Analyse file</button><button class="alt" id="d1">Try normal demo</button><button class="alt" id="d2">Try arrhythmia demo</button>
+                </div>
+                <p id="msg" class="note"></p>
+            </section>
+            <section id="res" hidden>
+                <h2>Result</h2>
+                <canvas id="chart"></canvas>
+                <div class="stats">
+                    <div><span>Risk</span><b id="risk"></b></div>
+                    <div><span>Heart rate</span><b id="hr"></b></div>
+                    <div><span>Beats analysed</span><b id="nb"></b></div>
+                    <div><span>Beat types</span><b id="cnt" style="font-size:16px"></b></div>
+                </div>
+                <div id="why"></div>
+                <p class="note">Trace colours: teal = normal beat, red = abnormal beat.</p>
+            </section>
+            <section>
+                <h2>History</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Risk</th>
+                            <th>Heart rate</th>
+                            <th>Abnormal beats</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hist"></tbody>
+                </table>
+            </section>
+        </main>
+        <script>
+const $=id=>document.getElementById(id),NAMES={N:"Normal",S:"Supraventricular",V:"Ventricular",F:"Fusion",Q:"Unknown"};
+const api=async(u,o)=>{const r=await fetch(u,o);const j=await r.json();if(!r.ok)throw new Error(j.detail||"Request failed");return j};
+const post=(u,b)=>api(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+const say=(t,e)=>{$("msg").textContent=t;$("msg").className=e?"err":"note"};
+async function loadPatients(sel){const p=await api("/api/patients");$("pat").innerHTML=p.map(x=>`<option value="${x.id}">${x.name} (${x.age})</option>`).join("");if(sel)$("pat").value=sel;history()}
+async function history(){if(!$("pat").value){$("hist").innerHTML="";return}
+ const h=await api(`/api/patients/${$("pat").value}/history`);
+ $("hist").innerHTML=h.length?h.map(r=>`<tr><td>${new Date(r.ts*1000).toLocaleString()}</td><td class="${r.risk}">${r.risk}</td><td>${r.hr} bpm</td><td>${Math.round(r.abnormal*100)}%</td></tr>`).join(""):`<tr><td colspan="4" class="note">No analyses yet. Upload an ECG or try a demo.</td></tr>`}
+function draw(r){const c=$("chart"),dpr=devicePixelRatio||1,W=c.clientWidth,H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;
+ const g=c.getContext("2d");g.scale(dpr,dpr);const w=r.waveform,mn=Math.min(...w),mx=Math.max(...w),y=v=>H-8-(v-mn)/(mx-mn||1)*(H-16),x=i=>i/(w.length-1)*W;
+ g.strokeStyle="#0e3a4a";g.lineWidth=1.4;g.beginPath();w.forEach((v,i)=>i?g.lineTo(x(i),y(v)):g.moveTo(x(i),y(v)));g.stroke();
+ r.beats.forEach(b=>{const bad=b.label!=="N";g.fillStyle=bad?"#b3261e":"#0e3a4a";g.beginPath();g.arc(x(b.i),y(w[b.i]),bad?5:3,0,7);g.fill();
+  if(bad){g.font="12px sans-serif";g.fillText(b.label,x(b.i)+7,y(w[b.i])-4)}})}
+function show(r){$("res").hidden=false;$("risk").textContent=r.risk;$("risk").className=r.risk;$("hr").textContent=r.hr+" bpm";$("nb").textContent=r.n_beats;
+ $("cnt").textContent=Object.entries(r.counts).map(([k,v])=>`${NAMES[k]} ${v}`).join(", ");
+ $("why").innerHTML=r.reasons.length?r.reasons.map(t=>`<div class="alert">${t}. Consider a medical check-up.</div>`).join(""):"<p>No concerning patterns found in this recording.</p>";draw(r);history()}
+async function analyse(samples,fs){if(!$("pat").value)return say("Add a patient first.",1);say("Analysing…");
+ try{show(await post("/api/analyze",{patient_id:+$("pat").value,fs,samples}));say("")}catch(e){say(e.message,1)}}
+$("add").onclick=async()=>{if(!$("name").value||!$("age").value)return say("Enter a name and age.",1);try{const p=await post("/api/patients",{name:$("name").value,age:+$("age").value});$("name").value=$("age").value="";loadPatients(p.id);say("")}catch(e){say(e.message,1)}};
+$("pat").onchange=history;
+$("go").onclick=async()=>{const f=$("file").files[0];if(!f)return say("Choose a CSV file first.",1);
+ const s=(await f.text()).split(/\r?\n/).map(l=>parseFloat(l.split(",").pop())).filter(v=>!isNaN(v));analyse(s,+$("fs").value||360)};
+for(const [id,k] of [["d1","normal"],["d2","arrhythmia"]])$(id).onclick=async()=>{const d=await api("/api/demo?kind="+k);analyse(d.samples,d.fs)};
+loadPatients();
+        </script>
+    </body>
+</html>
