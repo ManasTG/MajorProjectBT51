@@ -5,3 +5,11 @@ joblib
 fastapi
 uvicorn
 wfdb
+
+pwdlib[argon2]
+itsdangerous
+
+sqlalchemy
+psycopg[binary]
+
+email-validator
