@@ -44,6 +44,48 @@ def add_patient(p: Patient):
 def patients():
     return [dict(r) for r in db.execute("SELECT * FROM patients ORDER BY id DESC")]
 
+# UPDATE PATIENT
+@app.put("/api/patients/{pid}")
+def update_patient(pid: int, p: Patient):
+
+    existing = db.execute(
+        "SELECT * FROM patients WHERE id=?", (pid,)
+    ).fetchone()
+
+    if not existing:
+        raise HTTPException(404, "Patient not found")
+
+    db.execute(
+        "UPDATE patients SET name=?, age=? WHERE id=?",
+        (p.name, p.age, pid)
+    )
+
+    db.commit()
+
+    return {"message": "Patient updated successfully"}
+
+
+# DELETE PATIENT
+@app.delete("/api/patients/{pid}")
+def delete_patient(pid: int):
+
+    existing = db.execute(
+        "SELECT * FROM patients WHERE id=?", (pid,)
+    ).fetchone()
+
+    if not existing:
+        raise HTTPException(404, "Patient not found")
+
+    # Delete associated analysis history first
+    db.execute("DELETE FROM analyses WHERE patient_id=?", (pid,))
+
+    # Delete patient
+    db.execute("DELETE FROM patients WHERE id=?", (pid,))
+
+    db.commit()
+
+    return {"message": "Patient deleted successfully"}    
+
 
 @app.post("/api/analyze")
 def run(e: Ecg):

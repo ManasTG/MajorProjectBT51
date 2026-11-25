@@ -12,7 +12,8 @@ main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:16px}
 section{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
 h2{margin:0 0 10px;font-size:15px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 input,select,button{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:#fff}
-button{background:var(--ink);color:#fff;border-color:var(--ink);cursor:pointer}button.alt{background:#fff;color:var(--ink)}
+button{background:var(--ink);color:#fff;border-color:var(--ink);cursor:pointer}button.alt{background:#fff;color:var(--ink)}button.danger{background:#fff;color:var(--high);border-color:#e4b9b6}button.sm{padding:4px 10px;font-size:13px}
+[hidden]{display:none !important}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--trace);outline-offset:2px}
 #chart{width:100%;height:220px;display:block;border:1px solid #ecc;border-radius:4px;background-color:#fff;
 background-image:linear-gradient(#f3d3d3 1px,transparent 1px),linear-gradient(90deg,#f3d3d3 1px,transparent 1px);background-size:20px 20px}
@@ -20,6 +21,9 @@ background-image:linear-gradient(#f3d3d3 1px,transparent 1px),linear-gradient(90
 #risk{font-weight:700}.Low{color:var(--low)}.Moderate{color:var(--mod)}.High{color:var(--high)}
 .alert{border-left:4px solid var(--high);background:#fdf0ef;padding:8px 12px;margin:8px 0;border-radius:0 4px 4px 0}
 table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.edit-box{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--bg);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.table-wrap{margin-top:12px;overflow-x:auto}
 .note{color:var(--muted);font-size:12.5px}.err{color:var(--high)}
         </style>
     </head>
@@ -33,6 +37,28 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
                 <h2>Patient</h2>
                 <div class="row">
                     <select id="pat" aria-label="Patient"></select> <input id="name" placeholder="Full name" aria-label="Name"><input id="age" type="number" min="0" max="120" placeholder="Age" style="width:80px" aria-label="Age"> <button class="alt" id="add">Add patient</button>
+                </div>
+                <p id="patMsg" class="note"></p>
+                <form id="editForm" class="edit-box" hidden>
+                    <input type="hidden" id="editId">
+                    <span class="note">Edit patient #<span id="editPid"></span></span>
+                    <input id="editName" placeholder="Full name" aria-label="Edit name">
+                    <input id="editAge" type="number" min="0" max="120" placeholder="Age" style="width:80px" aria-label="Edit age">
+                    <button type="submit" id="saveEdit">Save changes</button>
+                    <button type="button" class="alt" id="cancelEdit">Cancel</button>
+                </form>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patTable"></tbody>
+                    </table>
                 </div>
             </section>
             <section>
@@ -72,9 +98,30 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
         <script>
 const $=id=>document.getElementById(id),NAMES={N:"Normal",S:"Supraventricular",V:"Ventricular",F:"Fusion",Q:"Unknown"};
 const api=async(u,o)=>{const r=await fetch(u,o);const j=await r.json();if(!r.ok)throw new Error(j.detail||"Request failed");return j};
-const post=(u,b)=>api(u,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
-const say=(t,e)=>{$("msg").textContent=t;$("msg").className=e?"err":"note"};
-async function loadPatients(sel){const p=await api("/api/patients");$("pat").innerHTML=p.map(x=>`<option value="${x.id}">${x.name} (${x.age})</option>`).join("");if(sel)$("pat").value=sel;history()}
+const send=(u,m,b)=>api(u,{method:m,headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
+const post=(u,b)=>send(u,"POST",b),put=(u,b)=>send(u,"PUT",b),del=u=>api(u,{method:"DELETE"});
+const setStatus=(el,t,e)=>{el.textContent=t;el.className=e?"err":"note"};
+const say=(t,e)=>setStatus($("msg"),t,e),patSay=(t,e)=>setStatus($("patMsg"),t,e);
+function validPatient(rawName,rawAge){const name=rawName.trim(),age=Number(rawAge);if(!name||rawAge===""||!Number.isInteger(age)||age<0||age>120)return null;return{name,age}}
+function cell(t){const td=document.createElement("td");td.textContent=t;return td}
+function btn(label,cls,onClick){const b=document.createElement("button");b.type="button";b.textContent=label;b.className=cls;b.onclick=onClick;return b}
+function renderPatients(list){
+ const pat=$("pat"),tb=$("patTable");pat.replaceChildren();tb.replaceChildren();
+ list.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=`${x.name} (${x.age})`;pat.appendChild(o)});
+ if(!list.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=4;td.className="note";td.textContent="No patients registered yet.";tr.appendChild(td);tb.appendChild(tr);return}
+ list.forEach(x=>{const tr=document.createElement("tr"),act=document.createElement("td"),box=document.createElement("div");
+  box.className="actions";box.append(btn("Edit","alt sm",()=>startEdit(x)),btn("Delete","danger sm",()=>removePatient(x)));
+  act.appendChild(box);tr.append(cell(x.id),cell(x.name),cell(x.age),act);tb.appendChild(tr)})}
+function startEdit(x){$("editId").value=x.id;$("editPid").textContent=x.id;$("editName").value=x.name;$("editAge").value=x.age;$("editForm").hidden=false;patSay("");$("editName").focus()}
+function cancelEdit(){$("editForm").hidden=true;$("editId").value=$("editName").value=$("editAge").value=""}
+async function removePatient(x){if(!confirm(`Delete patient "${x.name}" (ID ${x.id}) and their ECG history?`))return;
+ try{await del(`/api/patients/${x.id}`);if(String($("editId").value)===String(x.id))cancelEdit();await loadPatients();patSay("Patient deleted.")}catch(e){patSay(e.message,1)}}
+async function loadPatients(sel){const prev=$("pat").value,p=await api("/api/patients");renderPatients(p);
+ if(sel!==undefined&&sel!==null&&p.some(x=>String(x.id)===String(sel)))$("pat").value=String(sel);
+ else if(prev&&p.some(x=>String(x.id)===prev))$("pat").value=prev;
+ else $("pat").value=p.length?String(p[0].id):"";
+ if(prev&&$("pat").value!==prev)$("res").hidden=true;
+ await history()}
 async function history(){if(!$("pat").value){$("hist").innerHTML="";return}
  const h=await api(`/api/patients/${$("pat").value}/history`);
  $("hist").innerHTML=h.length?h.map(r=>`<tr><td>${new Date(r.ts*1000).toLocaleString()}</td><td class="${r.risk}">${r.risk}</td><td>${r.hr} bpm</td><td>${Math.round(r.abnormal*100)}%</td></tr>`).join(""):`<tr><td colspan="4" class="note">No analyses yet. Upload an ECG or try a demo.</td></tr>`}
@@ -88,12 +135,17 @@ function show(r){$("res").hidden=false;$("risk").textContent=r.risk;$("risk").cl
  $("why").innerHTML=r.reasons.length?r.reasons.map(t=>`<div class="alert">${t}. Consider a medical check-up.</div>`).join(""):"<p>No concerning patterns found in this recording.</p>";draw(r);history()}
 async function analyse(samples,fs){if(!$("pat").value)return say("Add a patient first.",1);say("Analysing…");
  try{show(await post("/api/analyze",{patient_id:+$("pat").value,fs,samples}));say("")}catch(e){say(e.message,1)}}
-$("add").onclick=async()=>{if(!$("name").value||!$("age").value)return say("Enter a name and age.",1);try{const p=await post("/api/patients",{name:$("name").value,age:+$("age").value});$("name").value=$("age").value="";loadPatients(p.id);say("")}catch(e){say(e.message,1)}};
+$("add").onclick=async()=>{const data=validPatient($("name").value,$("age").value);if(!data)return patSay("Enter a valid name and age (0-120).",1);
+ try{const p=await post("/api/patients",data);$("name").value=$("age").value="";await loadPatients(p.id);patSay("Patient added.");say("")}catch(e){patSay(e.message,1)}};
+$("editForm").onsubmit=async ev=>{ev.preventDefault();const id=$("editId").value,data=validPatient($("editName").value,$("editAge").value);
+ if(!data)return patSay("Enter a valid name and age (0-120).",1);
+ try{await put(`/api/patients/${id}`,data);cancelEdit();await loadPatients();patSay("Patient updated.")}catch(e){patSay(e.message,1)}};
+$("cancelEdit").onclick=()=>{cancelEdit();patSay("")};
 $("pat").onchange=history;
 $("go").onclick=async()=>{const f=$("file").files[0];if(!f)return say("Choose a CSV file first.",1);
  const s=(await f.text()).split(/\r?\n/).map(l=>parseFloat(l.split(",").pop())).filter(v=>!isNaN(v));analyse(s,+$("fs").value||360)};
 for(const [id,k] of [["d1","normal"],["d2","arrhythmia"]])$(id).onclick=async()=>{const d=await api("/api/demo?kind="+k);analyse(d.samples,d.fs)};
-loadPatients();
+loadPatients().catch(e=>patSay(e.message,1));
         </script>
     </body>
 </html>
