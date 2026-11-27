@@ -1,151 +1,1535 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1">
-        <title>ECG Monitor</title>
-        <style>
-:root{--ink:#14232b;--muted:#5d6f78;--line:#d5dde1;--bg:#f4f7f8;--card:#fff;--low:#1f7a4d;--mod:#b86e00;--high:#b3261e;--trace:#0e3a4a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
-header{padding:20px 28px;border-bottom:1px solid var(--line);background:var(--card)}h1{margin:0;font-size:20px}header p{margin:2px 0 0;color:var(--muted);font-size:13px}
-main{max-width:1000px;margin:0 auto;padding:20px;display:grid;gap:16px}
-section{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px}
-h2{margin:0 0 10px;font-size:15px}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-input,select,button{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:4px;background:#fff}
-button{background:var(--ink);color:#fff;border-color:var(--ink);cursor:pointer}button.alt{background:#fff;color:var(--ink)}button.danger{background:#fff;color:var(--high);border-color:#e4b9b6}button.sm{padding:4px 10px;font-size:13px}
-[hidden]{display:none !important}
-button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--trace);outline-offset:2px}
-#chart{width:100%;height:220px;display:block;border:1px solid #ecc;border-radius:4px;background-color:#fff;
-background-image:linear-gradient(#f3d3d3 1px,transparent 1px),linear-gradient(90deg,#f3d3d3 1px,transparent 1px);background-size:20px 20px}
-.stats{display:flex;gap:28px;flex-wrap:wrap;margin:12px 0}.stats b{display:block;font-size:26px;font-variant-numeric:tabular-nums}.stats span{color:var(--muted);font-size:13px}
-#risk{font-weight:700}.Low{color:var(--low)}.Moderate{color:var(--mod)}.High{color:var(--high)}
-.alert{border-left:4px solid var(--high);background:#fdf0ef;padding:8px 12px;margin:8px 0;border-radius:0 4px 4px 0}
-table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
-.actions{display:flex;gap:6px;flex-wrap:wrap}
-.edit-box{margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:var(--bg);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.table-wrap{margin-top:12px;overflow-x:auto}
-.note{color:var(--muted);font-size:12.5px}.err{color:var(--high)}
-        </style>
-    </head>
-    <body>
-        <header>
-            <h1>ECG arrhythmia monitor</h1>
-            <p>Screening and monitoring aid. It does not diagnose; see a doctor about any alert.</p>
-        </header>
-        <main>
-            <section>
-                <h2>Patient</h2>
-                <div class="row">
-                    <select id="pat" aria-label="Patient"></select> <input id="name" placeholder="Full name" aria-label="Name"><input id="age" type="number" min="0" max="120" placeholder="Age" style="width:80px" aria-label="Age"> <button class="alt" id="add">Add patient</button>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patient Health Monitoring</title>
+
+<style>
+:root {
+    --primary: #176b68;
+    --dark: #173b45;
+    --bg: #f3f7f8;
+    --white: #ffffff;
+    --text: #20343b;
+    --muted: #71838a;
+    --border: #dce5e8;
+    --danger: #c0392b;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+button, input, select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    background: var(--primary);
+    color: white;
+}
+
+button:hover {
+    opacity: .9;
+}
+
+button.alt {
+    background: white;
+    color: var(--dark);
+    border: 1px solid var(--border);
+}
+
+button.danger {
+    background: white;
+    color: var(--danger);
+    border: 1px solid #e7c4c0;
+}
+
+input, select {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: white;
+    color: var(--text);
+    min-width: 0;
+}
+
+input:focus, select:focus {
+    outline: 2px solid #b5d9d6;
+    border-color: var(--primary);
+}
+
+header {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 18px 5%;
+}
+
+.header-inner {
+    max-width: 1150px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.brand {
+    font-size: 21px;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.brand span {
+    color: var(--primary);
+}
+
+.subtitle {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 3px;
+}
+
+main {
+    max-width: 1150px;
+    margin: auto;
+    padding: 25px 20px;
+}
+
+.card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin-bottom: 18px;
+}
+
+h2 {
+    margin: 0 0 16px;
+    font-size: 18px;
+}
+
+h3 {
+    margin: 0 0 8px;
+}
+
+.note {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.error {
+    color: var(--danger);
+}
+
+.success {
+    color: var(--primary);
+}
+
+.auth-wrapper {
+    min-height: 85vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 25px 15px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    padding: 32px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 30px rgba(20, 55, 65, .06);
+}
+
+.auth-card h1 {
+    color: var(--dark);
+    margin: 0 0 8px;
+    font-size: 26px;
+}
+
+.auth-card > p {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.auth-form {
+    display: grid;
+    gap: 13px;
+}
+
+.auth-form label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.auth-form input {
+    width: 100%;
+    margin-top: 5px;
+}
+
+.auth-form button {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.auth-switch {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 20px;
+    color: var(--muted);
+}
+
+.auth-switch button {
+    background: none;
+    color: var(--primary);
+    padding: 0;
+    font-weight: 600;
+}
+
+#authMessage {
+    min-height: 20px;
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+.welcome {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.welcome h1 {
+    margin: 0;
+    color: var(--dark);
+    font-size: 25px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 18px;
+}
+
+.summary-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.summary-card span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.summary-card strong {
+    display: block;
+    font-size: 27px;
+    margin-top: 8px;
+    color: var(--primary);
+}
+
+.row {
+    display: flex;
+    gap: 9px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.row input {
+    flex: 1;
+}
+
+.table-wrap {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    text-align: left;
+    padding: 11px 9px;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    color: var(--muted);
+    font-weight: 600;
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+}
+
+.sm {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.edit-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin-top: 15px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+}
+
+#chart {
+    width: 100%;
+    height: 220px;
+    display: block;
+    border: 1px solid #e8cccc;
+    border-radius: 6px;
+    background-color: white;
+    background-image:
+        linear-gradient(#f3d3d3 1px, transparent 1px),
+        linear-gradient(90deg, #f3d3d3 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+.stats {
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin: 15px 0;
+}
+
+.stats span {
+    display: block;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.stats b {
+    display: block;
+    font-size: 25px;
+}
+
+.Low { color: #218653; }
+.Moderate { color: #bd7900; }
+.High { color: #c0392b; }
+
+.alert {
+    padding: 10px;
+    background: #fff1ef;
+    border-left: 4px solid #c0392b;
+    margin: 8px 0;
+    border-radius: 4px;
+}
+
+footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 20px;
+}
+
+@media(max-width:650px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .auth-card {
+        padding: 23px;
+    }
+
+    .welcome h1 {
+        font-size: 21px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- AUTHENTICATION HEADER -->
+
+<header>
+    <div class="header-inner">
+        <div>
+            <div class="brand">Health<span>Monitor</span></div>
+            <div class="subtitle">AI-Powered Patient Health Monitoring</div>
+        </div>
+    </div>
+</header>
+
+
+<!-- LOGIN AND SIGNUP -->
+
+<div id="authView" class="auth-wrapper">
+
+    <div class="auth-card">
+
+        <div id="loginForm">
+            <h1>Welcome Back!</h1>
+            <p>Login to access your health monitoring dashboard.</p>
+
+            <form id="loginFormElement" class="auth-form">
+
+                <label>
+                    Email Address
+                    <input id="loginEmail" type="email"
+                           placeholder="Enter your email" required>
+                </label>
+
+                <label>
+                    Password
+                    <input id="loginPassword" type="password"
+                           placeholder="Enter your password" required>
+                </label>
+
+                <button type="submit">Login</button>
+            </form>
+
+            <div class="auth-switch">
+                Don't have an account?
+                <button type="button" id="showSignup">Sign up</button>
+            </div>
+        </div>
+
+
+        <div id="signupForm" hidden>
+            <h1>Create Account</h1>
+            <p>Register to start monitoring your health.</p>
+
+            <form id="signupFormElement" class="auth-form">
+
+                <label>
+                    Full Name
+                    <input id="signupName" type="text"
+                           placeholder="Enter your name"
+                           minlength="2" maxlength="100" required>
+                </label>
+
+                <label>
+                    Email Address
+                    <input id="signupEmail" type="email"
+                           placeholder="Enter your email" required>
+                </label>
+
+                <label>
+                    Age
+                    <input id="signupAge" type="number"
+                           min="1" max="120"
+                           placeholder="Enter your age" required>
+                </label>
+
+                <label>
+                    Password
+                    <input id="signupPassword" type="password"
+                           minlength="8" maxlength="128"
+                           placeholder="Minimum 8 characters" required>
+                </label>
+
+                <button type="submit">Create Account</button>
+            </form>
+
+            <div class="auth-switch">
+                Already have an account?
+                <button type="button" id="showLogin">Login</button>
+            </div>
+        </div>
+
+        <p id="authMessage"></p>
+
+    </div>
+</div>
+
+
+<!-- PATIENT DASHBOARD -->
+
+<div id="appView" hidden>
+
+    <main>
+
+        <section class="card">
+            <div class="welcome">
+                <div>
+                    <h1>Welcome, <span id="userName">Patient</span>!</h1>
+                    <p class="note" id="userEmail"></p>
                 </div>
-                <p id="patMsg" class="note"></p>
-                <form id="editForm" class="edit-box" hidden>
-                    <input type="hidden" id="editId">
-                    <span class="note">Edit patient #<span id="editPid"></span></span>
-                    <input id="editName" placeholder="Full name" aria-label="Edit name">
-                    <input id="editAge" type="number" min="0" max="120" placeholder="Age" style="width:80px" aria-label="Edit age">
-                    <button type="submit" id="saveEdit">Save changes</button>
-                    <button type="button" class="alt" id="cancelEdit">Cancel</button>
-                </form>
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Age</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="patTable"></tbody>
-                    </table>
-                </div>
-            </section>
-            <section>
-                <h2>Analyse an ECG</h2>
-                <div class="row">
-                    <input type="file" id="file" accept=".csv,.txt" aria-label="ECG CSV"><input id="fs" type="number" value="360" style="width:90px" aria-label="Sampling rate in Hz"><span class="note">Hz, one value per line</span> <button id="go">Analyse file</button><button class="alt" id="d1">Try normal demo</button><button class="alt" id="d2">Try arrhythmia demo</button>
-                </div>
-                <p id="msg" class="note"></p>
-            </section>
-            <section id="res" hidden>
-                <h2>Result</h2>
-                <canvas id="chart"></canvas>
-                <div class="stats">
-                    <div><span>Risk</span><b id="risk"></b></div>
-                    <div><span>Heart rate</span><b id="hr"></b></div>
-                    <div><span>Beats analysed</span><b id="nb"></b></div>
-                    <div><span>Beat types</span><b id="cnt" style="font-size:16px"></b></div>
-                </div>
-                <div id="why"></div>
-                <p class="note">Trace colours: teal = normal beat, red = abnormal beat.</p>
-            </section>
-            <section>
-                <h2>History</h2>
+
+                <button id="logoutBtn" class="danger">
+                    Logout
+                </button>
+            </div>
+        </section>
+
+
+        <!-- DASHBOARD SUMMARY -->
+
+        <div class="summary-grid">
+
+            <div class="summary-card">
+                <span>Patient Profiles</span>
+                <strong id="profileCount">0</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Selected Patient</span>
+                <strong id="selectedPatient">--</strong>
+            </div>
+
+            <div class="summary-card">
+                <span>Account Role</span>
+                <strong id="userRole">Patient</strong>
+            </div>
+
+        </div>
+
+
+        <!-- PATIENT MANAGEMENT -->
+
+        <section class="card">
+
+            <h2>Patient Management</h2>
+
+            <div class="row">
+
+                <select id="pat" aria-label="Patient">
+                </select>
+
+                <input id="name"
+                       placeholder="Full name"
+                       aria-label="Name">
+
+                <input id="age"
+                       type="number"
+                       min="1"
+                       max="120"
+                       placeholder="Age"
+                       style="width:100px"
+                       aria-label="Age">
+
+                <button id="add">Add Patient</button>
+
+            </div>
+
+            <p id="patMsg" class="note"></p>
+
+            <form id="editForm" class="edit-box" hidden>
+
+                <input type="hidden" id="editId">
+
+                <span class="note">
+                    Edit patient #<span id="editPid"></span>
+                </span>
+
+                <input id="editName" placeholder="Full name">
+
+                <input id="editAge" type="number"
+                       min="1" max="120"
+                       placeholder="Age" style="width:90px">
+
+                <button type="submit">Save Changes</button>
+
+                <button type="button" class="alt" id="cancelEdit">
+                    Cancel
+                </button>
+
+            </form>
+
+            <div class="table-wrap">
                 <table>
                     <thead>
                         <tr>
-                            <th>When</th>
-                            <th>Risk</th>
-                            <th>Heart rate</th>
-                            <th>Abnormal beats</th>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
+
+                    <tbody id="patTable"></tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- ECG MONITOR -->
+
+        <section class="card">
+
+            <h2>ECG Analysis</h2>
+
+            <p class="note">
+                Upload an ECG CSV/TXT file or use synthetic demo data.
+            </p>
+
+            <div class="row">
+
+                <input type="file"
+                       id="file"
+                       accept=".csv,.txt"
+                       aria-label="ECG CSV">
+
+                <input id="fs"
+                       type="number"
+                       value="360"
+                       style="width:100px"
+                       aria-label="Sampling rate">
+
+                <span class="note">Sampling rate (Hz)</span>
+
+                <button id="go">Analyse File</button>
+
+                <button class="alt" id="d1">Normal Demo</button>
+
+                <button class="alt" id="d2">Arrhythmia Demo</button>
+
+            </div>
+
+            <p id="msg" class="note"></p>
+
+        </section>
+
+
+        <!-- ECG RESULT -->
+
+        <section id="res" class="card" hidden>
+
+            <h2>ECG Analysis Result</h2>
+
+            <canvas id="chart"></canvas>
+
+            <div class="stats">
+
+                <div>
+                    <span>Risk</span>
+                    <b id="risk"></b>
+                </div>
+
+                <div>
+                    <span>Heart Rate</span>
+                    <b id="hr"></b>
+                </div>
+
+                <div>
+                    <span>Beats Analysed</span>
+                    <b id="nb"></b>
+                </div>
+
+                <div>
+                    <span>Beat Types</span>
+                    <b id="cnt" style="font-size:15px"></b>
+                </div>
+
+            </div>
+
+            <div id="why"></div>
+
+            <p class="note">
+                ECG analysis is a screening and monitoring aid,
+                not a medical diagnosis. Consult a qualified doctor.
+            </p>
+
+        </section>
+
+
+        <!-- ECG HISTORY -->
+
+        <section class="card">
+
+            <h2>ECG Analysis History</h2>
+
+            <div class="table-wrap">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Risk</th>
+                            <th>Heart Rate</th>
+                            <th>Abnormal Beats</th>
+                        </tr>
+                    </thead>
+
                     <tbody id="hist"></tbody>
                 </table>
-            </section>
-        </main>
-        <script>
-const $=id=>document.getElementById(id),NAMES={N:"Normal",S:"Supraventricular",V:"Ventricular",F:"Fusion",Q:"Unknown"};
-const api=async(u,o)=>{const r=await fetch(u,o);const j=await r.json();if(!r.ok)throw new Error(j.detail||"Request failed");return j};
-const send=(u,m,b)=>api(u,{method:m,headers:{"Content-Type":"application/json"},body:JSON.stringify(b)});
-const post=(u,b)=>send(u,"POST",b),put=(u,b)=>send(u,"PUT",b),del=u=>api(u,{method:"DELETE"});
-const setStatus=(el,t,e)=>{el.textContent=t;el.className=e?"err":"note"};
-const say=(t,e)=>setStatus($("msg"),t,e),patSay=(t,e)=>setStatus($("patMsg"),t,e);
-function validPatient(rawName,rawAge){const name=rawName.trim(),age=Number(rawAge);if(!name||rawAge===""||!Number.isInteger(age)||age<0||age>120)return null;return{name,age}}
-function cell(t){const td=document.createElement("td");td.textContent=t;return td}
-function btn(label,cls,onClick){const b=document.createElement("button");b.type="button";b.textContent=label;b.className=cls;b.onclick=onClick;return b}
-function renderPatients(list){
- const pat=$("pat"),tb=$("patTable");pat.replaceChildren();tb.replaceChildren();
- list.forEach(x=>{const o=document.createElement("option");o.value=x.id;o.textContent=`${x.name} (${x.age})`;pat.appendChild(o)});
- if(!list.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=4;td.className="note";td.textContent="No patients registered yet.";tr.appendChild(td);tb.appendChild(tr);return}
- list.forEach(x=>{const tr=document.createElement("tr"),act=document.createElement("td"),box=document.createElement("div");
-  box.className="actions";box.append(btn("Edit","alt sm",()=>startEdit(x)),btn("Delete","danger sm",()=>removePatient(x)));
-  act.appendChild(box);tr.append(cell(x.id),cell(x.name),cell(x.age),act);tb.appendChild(tr)})}
-function startEdit(x){$("editId").value=x.id;$("editPid").textContent=x.id;$("editName").value=x.name;$("editAge").value=x.age;$("editForm").hidden=false;patSay("");$("editName").focus()}
-function cancelEdit(){$("editForm").hidden=true;$("editId").value=$("editName").value=$("editAge").value=""}
-async function removePatient(x){if(!confirm(`Delete patient "${x.name}" (ID ${x.id}) and their ECG history?`))return;
- try{await del(`/api/patients/${x.id}`);if(String($("editId").value)===String(x.id))cancelEdit();await loadPatients();patSay("Patient deleted.")}catch(e){patSay(e.message,1)}}
-async function loadPatients(sel){const prev=$("pat").value,p=await api("/api/patients");renderPatients(p);
- if(sel!==undefined&&sel!==null&&p.some(x=>String(x.id)===String(sel)))$("pat").value=String(sel);
- else if(prev&&p.some(x=>String(x.id)===prev))$("pat").value=prev;
- else $("pat").value=p.length?String(p[0].id):"";
- if(prev&&$("pat").value!==prev)$("res").hidden=true;
- await history()}
-async function history(){if(!$("pat").value){$("hist").innerHTML="";return}
- const h=await api(`/api/patients/${$("pat").value}/history`);
- $("hist").innerHTML=h.length?h.map(r=>`<tr><td>${new Date(r.ts*1000).toLocaleString()}</td><td class="${r.risk}">${r.risk}</td><td>${r.hr} bpm</td><td>${Math.round(r.abnormal*100)}%</td></tr>`).join(""):`<tr><td colspan="4" class="note">No analyses yet. Upload an ECG or try a demo.</td></tr>`}
-function draw(r){const c=$("chart"),dpr=devicePixelRatio||1,W=c.clientWidth,H=c.clientHeight;c.width=W*dpr;c.height=H*dpr;
- const g=c.getContext("2d");g.scale(dpr,dpr);const w=r.waveform,mn=Math.min(...w),mx=Math.max(...w),y=v=>H-8-(v-mn)/(mx-mn||1)*(H-16),x=i=>i/(w.length-1)*W;
- g.strokeStyle="#0e3a4a";g.lineWidth=1.4;g.beginPath();w.forEach((v,i)=>i?g.lineTo(x(i),y(v)):g.moveTo(x(i),y(v)));g.stroke();
- r.beats.forEach(b=>{const bad=b.label!=="N";g.fillStyle=bad?"#b3261e":"#0e3a4a";g.beginPath();g.arc(x(b.i),y(w[b.i]),bad?5:3,0,7);g.fill();
-  if(bad){g.font="12px sans-serif";g.fillText(b.label,x(b.i)+7,y(w[b.i])-4)}})}
-function show(r){$("res").hidden=false;$("risk").textContent=r.risk;$("risk").className=r.risk;$("hr").textContent=r.hr+" bpm";$("nb").textContent=r.n_beats;
- $("cnt").textContent=Object.entries(r.counts).map(([k,v])=>`${NAMES[k]} ${v}`).join(", ");
- $("why").innerHTML=r.reasons.length?r.reasons.map(t=>`<div class="alert">${t}. Consider a medical check-up.</div>`).join(""):"<p>No concerning patterns found in this recording.</p>";draw(r);history()}
-async function analyse(samples,fs){if(!$("pat").value)return say("Add a patient first.",1);say("Analysing…");
- try{show(await post("/api/analyze",{patient_id:+$("pat").value,fs,samples}));say("")}catch(e){say(e.message,1)}}
-$("add").onclick=async()=>{const data=validPatient($("name").value,$("age").value);if(!data)return patSay("Enter a valid name and age (0-120).",1);
- try{const p=await post("/api/patients",data);$("name").value=$("age").value="";await loadPatients(p.id);patSay("Patient added.");say("")}catch(e){patSay(e.message,1)}};
-$("editForm").onsubmit=async ev=>{ev.preventDefault();const id=$("editId").value,data=validPatient($("editName").value,$("editAge").value);
- if(!data)return patSay("Enter a valid name and age (0-120).",1);
- try{await put(`/api/patients/${id}`,data);cancelEdit();await loadPatients();patSay("Patient updated.")}catch(e){patSay(e.message,1)}};
-$("cancelEdit").onclick=()=>{cancelEdit();patSay("")};
-$("pat").onchange=history;
-$("go").onclick=async()=>{const f=$("file").files[0];if(!f)return say("Choose a CSV file first.",1);
- const s=(await f.text()).split(/\r?\n/).map(l=>parseFloat(l.split(",").pop())).filter(v=>!isNaN(v));analyse(s,+$("fs").value||360)};
-for(const [id,k] of [["d1","normal"],["d2","arrhythmia"]])$(id).onclick=async()=>{const d=await api("/api/demo?kind="+k);analyse(d.samples,d.fs)};
-loadPatients().catch(e=>patSay(e.message,1));
-        </script>
-    </body>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<footer>
+    AI-Powered Patient Health Monitoring System
+    <br>
+    Screening and monitoring aid only. Not a substitute for medical advice.
+</footer>
+
+
+<script>
+
+const $ = id => document.getElementById(id);
+
+const NAMES = {
+    N: "Normal",
+    S: "Supraventricular",
+    V: "Ventricular",
+    F: "Fusion",
+    Q: "Unknown"
+};
+
+
+// API HELPERS
+
+const api = async (url, options = {}) => {
+
+    const response = await fetch(url, {
+        ...options,
+        credentials: "same-origin"
+    });
+
+    let data = {};
+
+    try {
+        data = await response.json();
+    } catch {
+        data = {};
+    }
+
+    if (!response.ok) {
+        throw new Error(
+            data.detail || data.message || "Request failed"
+        );
+    }
+
+    return data;
+};
+
+
+const send = (url, method, body) => {
+
+    return api(url, {
+        method,
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+    });
+};
+
+
+const post = (url, body) => send(url, "POST", body);
+const put = (url, body) => send(url, "PUT", body);
+const del = url => api(url, { method: "DELETE" });
+
+
+function setStatus(element, message, error = false) {
+
+    element.textContent = message;
+
+    element.className = error ? "error" : "success";
+}
+
+
+function say(message, error = false) {
+    setStatus($("msg"), message, error);
+}
+
+
+function patSay(message, error = false) {
+    setStatus($("patMsg"), message, error);
+}
+
+
+// AUTHENTICATION UI
+
+function showAuth(mode = "login") {
+
+    $("authView").hidden = false;
+    $("appView").hidden = true;
+
+    $("loginForm").hidden = mode !== "login";
+    $("signupForm").hidden = mode !== "signup";
+
+    $("authMessage").textContent = "";
+    $("authMessage").className = "";
+}
+
+
+async function showDashboard(user) {
+
+    $("authView").hidden = true;
+    $("appView").hidden = false;
+
+    $("userName").textContent = user.name;
+    $("userEmail").textContent = user.email;
+    $("userRole").textContent = user.role;
+
+    $("res").hidden = true;
+
+    await loadPatients();
+}
+
+
+// LOGIN
+
+$("loginFormElement").onsubmit = async event => {
+
+    event.preventDefault();
+
+    const email = $("loginEmail").value.trim();
+    const password = $("loginPassword").value;
+
+    setStatus($("authMessage"), "Logging in...");
+
+    try {
+
+        await post("/api/login", {
+            email,
+            password
+        });
+
+        const session = await api("/api/me");
+
+        await showDashboard(session.user);
+
+    } catch (error) {
+
+        setStatus($("authMessage"), error.message, true);
+
+    }
+};
+
+
+// SIGNUP
+
+$("signupFormElement").onsubmit = async event => {
+
+    event.preventDefault();
+
+    const name = $("signupName").value.trim();
+    const email = $("signupEmail").value.trim();
+    const age = Number($("signupAge").value);
+    const password = $("signupPassword").value;
+
+    try {
+
+        setStatus($("authMessage"), "Creating account...");
+
+        await post("/api/signup", {
+            name,
+            email,
+            age,
+            password
+        });
+
+        $("loginEmail").value = email;
+        $("loginPassword").value = "";
+
+        showAuth("login");
+
+        setStatus(
+            $("authMessage"),
+            "Registration successful! Please login."
+        );
+
+    } catch (error) {
+
+        setStatus($("authMessage"), error.message, true);
+
+    }
+};
+
+
+// SWITCH LOGIN / SIGNUP
+
+$("showSignup").onclick = () => showAuth("signup");
+
+$("showLogin").onclick = () => showAuth("login");
+
+
+// LOGOUT
+
+$("logoutBtn").onclick = async () => {
+
+    try {
+
+        await post("/api/logout", {});
+
+        $("loginPassword").value = "";
+
+        showAuth("login");
+
+    } catch (error) {
+
+        alert(error.message);
+
+    }
+};
+
+
+// CHECK EXISTING SESSION
+
+async function initializeApp() {
+
+    try {
+
+        const session = await api("/api/me");
+
+        await showDashboard(session.user);
+
+    } catch {
+
+        showAuth("login");
+
+    }
+}
+
+
+// PATIENT MANAGEMENT
+
+function validPatient(rawName, rawAge) {
+
+    const name = rawName.trim();
+    const age = Number(rawAge);
+
+    if (
+        !name ||
+        rawAge === "" ||
+        !Number.isInteger(age) ||
+        age < 1 ||
+        age > 120
+    ) {
+        return null;
+    }
+
+    return { name, age };
+}
+
+
+function cell(value) {
+
+    const td = document.createElement("td");
+
+    td.textContent = value;
+
+    return td;
+}
+
+
+function makeButton(label, className, callback) {
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+    button.textContent = label;
+    button.className = className;
+    button.onclick = callback;
+
+    return button;
+}
+
+
+function renderPatients(list) {
+
+    const patientSelect = $("pat");
+    const table = $("patTable");
+
+    patientSelect.replaceChildren();
+    table.replaceChildren();
+
+    $("profileCount").textContent = list.length;
+
+    list.forEach(patient => {
+
+        const option = document.createElement("option");
+
+        option.value = patient.id;
+        option.textContent =
+            `${patient.name} (${patient.age})`;
+
+        patientSelect.appendChild(option);
+
+    });
+
+
+    if (!list.length) {
+
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+
+        td.colSpan = 4;
+        td.className = "note";
+        td.textContent = "No patient profiles registered.";
+
+        tr.appendChild(td);
+        table.appendChild(tr);
+
+        $("selectedPatient").textContent = "--";
+
+        return;
+    }
+
+
+    list.forEach(patient => {
+
+        const tr = document.createElement("tr");
+        const actionCell = document.createElement("td");
+        const actionBox = document.createElement("div");
+
+        actionBox.className = "actions";
+
+        actionBox.append(
+            makeButton(
+                "Edit",
+                "alt sm",
+                () => startEdit(patient)
+            ),
+
+            makeButton(
+                "Delete",
+                "danger sm",
+                () => removePatient(patient)
+            )
+        );
+
+        actionCell.appendChild(actionBox);
+
+        tr.append(
+            cell(patient.id),
+            cell(patient.name),
+            cell(patient.age),
+            actionCell
+        );
+
+        table.appendChild(tr);
+
+    });
+
+    updateSelectedPatient();
+}
+
+
+function updateSelectedPatient() {
+
+    const select = $("pat");
+
+    const option = select.options[select.selectedIndex];
+
+    $("selectedPatient").textContent =
+        option ? option.textContent : "--";
+}
+
+
+function startEdit(patient) {
+
+    $("editId").value = patient.id;
+    $("editPid").textContent = patient.id;
+    $("editName").value = patient.name;
+    $("editAge").value = patient.age;
+
+    $("editForm").hidden = false;
+
+    $("editName").focus();
+}
+
+
+function cancelEdit() {
+
+    $("editForm").hidden = true;
+
+    $("editId").value = "";
+    $("editName").value = "";
+    $("editAge").value = "";
+}
+
+
+async function removePatient(patient) {
+
+    if (!confirm(
+        `Delete "${patient.name}" and their ECG history?`
+    )) {
+        return;
+    }
+
+    try {
+
+        await del(`/api/patients/${patient.id}`);
+
+        if (
+            String($("editId").value) === String(patient.id)
+        ) {
+            cancelEdit();
+        }
+
+        await loadPatients();
+
+        patSay("Patient deleted successfully.");
+
+    } catch (error) {
+
+        patSay(error.message, true);
+
+    }
+}
+
+
+async function loadPatients(selectedId) {
+
+    const previous = $("pat").value;
+
+    const patients = await api("/api/patients");
+
+    renderPatients(patients);
+
+    if (
+        selectedId &&
+        patients.some(p => String(p.id) === String(selectedId))
+    ) {
+
+        $("pat").value = String(selectedId);
+
+    } else if (
+        previous &&
+        patients.some(p => String(p.id) === previous)
+    ) {
+
+        $("pat").value = previous;
+
+    } else {
+
+        $("pat").value = patients.length
+            ? String(patients[0].id)
+            : "";
+
+    }
+
+    updateSelectedPatient();
+
+    await history();
+}
+
+
+// ADD PATIENT
+
+$("add").onclick = async () => {
+
+    const patient = validPatient(
+        $("name").value,
+        $("age").value
+    );
+
+    if (!patient) {
+        return patSay("Enter a valid name and age (1-120).", true);
+    }
+
+    try {
+
+        const result = await post("/api/patients", patient);
+
+        $("name").value = "";
+        $("age").value = "";
+
+        await loadPatients(result.id);
+
+        patSay("Patient added successfully.");
+
+    } catch (error) {
+
+        patSay(error.message, true);
+
+    }
+};
+
+
+// UPDATE PATIENT
+
+$("editForm").onsubmit = async event => {
+
+    event.preventDefault();
+
+    const id = $("editId").value;
+
+    const patient = validPatient(
+        $("editName").value,
+        $("editAge").value
+    );
+
+    if (!patient) {
+        return patSay("Enter a valid name and age.", true);
+    }
+
+    try {
+
+        await put(`/api/patients/${id}`, patient);
+
+        cancelEdit();
+
+        await loadPatients(id);
+
+        patSay("Patient updated successfully.");
+
+    } catch (error) {
+
+        patSay(error.message, true);
+
+    }
+};
+
+
+$("cancelEdit").onclick = cancelEdit;
+
+$("pat").onchange = async () => {
+
+    updateSelectedPatient();
+
+    $("res").hidden = true;
+
+    try {
+        await history();
+    } catch (error) {
+        say(error.message, true);
+    }
+
+};
+
+
+// ECG HISTORY
+
+async function history() {
+
+    const patientId = $("pat").value;
+
+    if (!patientId) {
+
+        $("hist").replaceChildren();
+
+        return;
+    }
+
+    const records = await api(
+        `/api/patients/${patientId}/history`
+    );
+
+    const tbody = $("hist");
+
+    tbody.replaceChildren();
+
+    if (!records.length) {
+
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+
+        td.colSpan = 4;
+        td.className = "note";
+        td.textContent = "No ECG analyses available yet.";
+
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+
+        return;
+    }
+
+    records.forEach(record => {
+
+        const tr = document.createElement("tr");
+
+        const date = new Date(
+            record.ts * 1000
+        ).toLocaleString();
+
+        const risk = cell(record.risk);
+        risk.className = record.risk;
+
+        tr.append(
+            cell(date),
+            risk,
+            cell(record.hr + " bpm"),
+            cell(Math.round(record.abnormal * 100) + "%")
+        );
+
+        tbody.appendChild(tr);
+
+    });
+
+}
+
+
+// ECG CHART
+
+function draw(result) {
+
+    const canvas = $("chart");
+
+    const dpr = window.devicePixelRatio || 1;
+
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+
+    const context = canvas.getContext("2d");
+
+    context.scale(dpr, dpr);
+
+    const waveform = result.waveform;
+
+    const minimum = Math.min(...waveform);
+    const maximum = Math.max(...waveform);
+
+    const y = value =>
+        height - 8 -
+        (value - minimum) /
+        (maximum - minimum || 1) *
+        (height - 16);
+
+    const x = index =>
+        index / (waveform.length - 1) * width;
+
+    context.strokeStyle = "#0e3a4a";
+    context.lineWidth = 1.4;
+
+    context.beginPath();
+
+    waveform.forEach((value, index) => {
+
+        if (index) {
+            context.lineTo(x(index), y(value));
+        } else {
+            context.moveTo(x(index), y(value));
+        }
+
+    });
+
+    context.stroke();
+
+    result.beats.forEach(beat => {
+
+        const abnormal = beat.label !== "N";
+
+        context.fillStyle = abnormal
+            ? "#c0392b"
+            : "#0e3a4a";
+
+        context.beginPath();
+
+        context.arc(
+            x(beat.i),
+            y(waveform[beat.i]),
+            abnormal ? 5 : 3,
+            0,
+            7
+        );
+
+        context.fill();
+
+        if (abnormal) {
+
+            context.font = "12px sans-serif";
+
+            context.fillText(
+                beat.label,
+                x(beat.i) + 7,
+                y(waveform[beat.i]) - 4
+            );
+
+        }
+
+    });
+
+}
+
+
+// SHOW ECG RESULT
+
+async function showResult(result) {
+
+    $("res").hidden = false;
+
+    $("risk").textContent = result.risk;
+    $("risk").className = result.risk;
+
+    $("hr").textContent = result.hr + " bpm";
+
+    $("nb").textContent = result.n_beats;
+
+    $("cnt").textContent = Object.entries(
+        result.counts
+    ).map(([key, value]) =>
+        `${NAMES[key]} ${value}`
+    ).join(", ");
+
+    const reasons = $("why");
+
+    reasons.replaceChildren();
+
+    if (result.reasons.length) {
+
+        result.reasons.forEach(reason => {
+
+            const div = document.createElement("div");
+
+            div.className = "alert";
+
+            div.textContent =
+                reason + ". Consider a medical check-up.";
+
+            reasons.appendChild(div);
+
+        });
+
+    } else {
+
+        const paragraph = document.createElement("p");
+
+        paragraph.textContent =
+            "No concerning patterns found in this recording.";
+
+        reasons.appendChild(paragraph);
+
+    }
+
+    draw(result);
+
+    await history();
+}
+
+
+// ANALYSE ECG
+
+async function analyse(samples, samplingRate) {
+
+    if (!$("pat").value) {
+        return say("Add a patient first.", true);
+    }
+
+    say("Analysing ECG...");
+
+    try {
+
+        const result = await post("/api/analyze", {
+            patient_id: Number($("pat").value),
+            fs: samplingRate,
+            samples
+        });
+
+        await showResult(result);
+
+        say("Analysis completed successfully.");
+
+    } catch (error) {
+
+        say(error.message, true);
+
+    }
+}
+
+
+// ECG FILE UPLOAD
+
+$("go").onclick = async () => {
+
+    const file = $("file").files[0];
+
+    if (!file) {
+        return say("Choose a CSV or TXT file first.", true);
+    }
+
+    try {
+
+        const text = await file.text();
+
+        const samples = text
+            .split(/\r?\n/)
+            .map(line => parseFloat(line.split(",").pop()))
+            .filter(value => !isNaN(value));
+
+        if (!samples.length) {
+            return say("No valid ECG samples found.", true);
+        }
+
+        await analyse(
+            samples,
+            Number($("fs").value) || 360
+        );
+
+    } catch (error) {
+
+        say(error.message, true);
+
+    }
+};
+
+
+// SYNTHETIC ECG DEMO
+
+for (const [id, kind] of [
+    ["d1", "normal"],
+    ["d2", "arrhythmia"]
+]) {
+
+    $(id).onclick = async () => {
+
+        try {
+
+            const data = await api(
+                "/api/demo?kind=" + kind
+            );
+
+            await analyse(data.samples, data.fs);
+
+        } catch (error) {
+
+            say(error.message, true);
+
+        }
+
+    };
+
+}
+
+
+// START APPLICATION
+
+initializeApp();
+
+</script>
+
+</body>
 </html>
