@@ -13,3 +13,5 @@ scikit-learn
 joblib
 wfdb
 matplotlib
+email-validator
+reportlab
