@@ -27,3 +27,29 @@ Upload a one-lead ECG as CSV (one sample per line, set the sampling rate), or us
 4. Wearable / live streaming input; extend to diabetes and other diseases.
 
 Decision-support only, not a medical diagnosis.
+
+## PulseAI – AI-Powered Patient Health Monitoring System
+
+PulseAI is an ECG-based health monitoring application designed to analyze ECG signals and assist in identifying cardiac arrhythmias using Machine Learning.
+
+### Key Features
+- Patient, Doctor and Admin dashboards
+- Secure user authentication
+- ECG signal upload and analysis
+- Random Forest-based arrhythmia classification
+- AAMI heartbeat classes: N, S, V, F and Q
+- ECG visualization and analysis reports
+- Patient history and downloadable reports
+
+### Technology Stack
+- Python, FastAPI
+- HTML, CSS, JavaScript
+- SQLite, SQLAlchemy
+- Scikit-learn, NumPy, SciPy
+- MIT-BIH Arrhythmia Database
+
+### Run Locally
+Install dependencies using `pip install -r requirements.txt`.
+
+Start the application using `uvicorn app.main:app --reload`.
+

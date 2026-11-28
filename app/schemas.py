@@ -1,14 +1,25 @@
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
+from typing import Optional
 
 
-class SignupRequest(BaseModel):
-    name: str = Field(min_length=2, max_length=100)
-    email: EmailStr
-    password: str = Field(min_length=8, max_length=128)
-    age: int = Field(ge=1, le=120)
-
-
-class LoginRequest(BaseModel):
+class UserSignup(BaseModel):
+    name: str
     email: EmailStr
     password: str
+    role: Optional[str] = "patient"
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    role: str
+
+    class Config:
+        from_attributes = True

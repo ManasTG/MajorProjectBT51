@@ -1,0 +1,625 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseAI | AI ECG Analysis Studio</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f3f7fa;color:#20343b}
+header{background:#123f50;color:white;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header h2{font-size:23px}
+header span{font-size:12px;color:#b9d9df}
+.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.back{color:#176b68;text-decoration:none;font-weight:bold}
+.hero{margin:25px 0}
+.hero h1{font-size:29px;margin-bottom:8px}
+.hero p{color:#718087;line-height:1.6}
+.card{background:white;padding:24px;border-radius:14px;margin-top:20px;box-shadow:0 3px 15px #193b4a0d}
+.card h2{font-size:19px;margin-bottom:8px}
+.subtitle{font-size:13px;color:#718087;line-height:1.6}
+.upload-area{border:2px dashed #8bbab7;border-radius:12px;padding:35px 20px;text-align:center;background:#f8fbfb;margin-top:18px}
+.upload-area h3{margin-bottom:10px}
+input[type=file]{margin-top:20px;max-width:100%}
+.sampling{margin-top:20px}
+.sampling input{width:100px;padding:10px;border:1px solid #ccd8d9;border-radius:7px;margin-left:8px}
+button{background:#176b68;color:white;border:0;padding:12px 20px;border-radius:7px;cursor:pointer;margin-top:18px;font-weight:bold}
+button:hover{background:#125653}
+button:disabled{opacity:.6;cursor:not-allowed}
+.secondary{background:#e7f2f1;color:#176b68}
+.download-btn{background:#176b68;color:white;text-decoration:none;display:inline-block;padding:12px 20px;border-radius:7px;font-weight:bold;font-size:14px}
+.download-btn:hover{background:#125653}
+#fileName{margin-top:14px;color:#176b68;font-weight:bold;font-size:13px}
+#message{margin-top:16px;font-size:14px;line-height:1.5}
+.results{display:none}
+.section-title{margin:30px 0 12px;font-size:21px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px;margin-top:20px}
+.stat-card{background:white;padding:20px;border-radius:12px;border:1px solid #e5eded;border-left:4px solid #176b68}
+.stat-card h3{font-size:12px;color:#718087;margin-bottom:12px}
+.stat-card p{font-size:25px;font-weight:bold;color:#176b68;overflow-wrap:anywhere}
+.stat-card small{display:block;color:#87969b;margin-top:7px;font-size:11px}
+.grid-two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.chart-wrap{position:relative;height:300px;margin-top:20px}
+.graph{width:100%;display:block;margin-top:20px;border-radius:8px;border:1px solid #e2e8e9}
+.result-banner{background:#eaf5f3;padding:18px;border-radius:10px;margin-top:20px;border-left:4px solid #176b68;line-height:1.6}
+.result-banner strong{color:#176b68}
+.table-wrap{overflow-x:auto;margin-top:18px}
+table{width:100%;border-collapse:collapse;min-width:550px;font-size:13px}
+th,td{text-align:left;padding:13px;border-bottom:1px solid #edf0f1}
+th{background:#f3f8f8;color:#52676d}
+.pill{display:inline-block;padding:5px 9px;border-radius:20px;background:#e7f2f1;color:#176b68;font-size:11px;font-weight:bold}
+.class-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-top:18px}
+.class-box{padding:15px;background:#f5f9f9;border-radius:9px}
+.class-box b{font-size:20px;color:#176b68}
+.class-box p{font-size:12px;color:#718087;margin-top:6px}
+.note{font-size:12px;color:#718087;line-height:1.7;margin-top:20px}
+.report-head{display:none}
+footer{text-align:center;color:#819196;font-size:12px;padding:30px}
+@media(max-width:750px){.grid-two{grid-template-columns:1fr}.hero h1{font-size:24px}.card{padding:18px}}
+@media print{
+body{background:white}
+header,.back,.upload-card,.report-actions,footer{display:none!important}
+.container{max-width:100%;margin:0;padding:0}
+.card,.stat-card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+.results{display:block!important}
+.report-head{display:block;margin:15px 0 25px}
+.chart-wrap{height:230px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h2>PulseAI</h2>
+        <span>AI-POWERED ECG MONITORING SYSTEM</span>
+    </div>
+    <span>HEALTH ANALYTICS STUDIO</span>
+</header>
+
+<div class="container">
+
+<a href="/dashboard" class="back">← Back to Dashboard</a>
+
+<div class="hero">
+    <h1>AI ECG Analysis Studio</h1>
+    <p>Upload ECG recordings, analyze heartbeat patterns and explore experimental AI-based classification results.</p>
+</div>
+
+<div class="card upload-card">
+    <h2>ECG Data Upload</h2>
+    <p class="subtitle">Upload a single-column ECG CSV recording for signal processing and heartbeat classification.</p>
+
+    <div class="upload-area">
+        <h3>Select ECG Recording</h3>
+        <p class="subtitle">Supported format: CSV | Maximum file size: 10 MB</p>
+
+        <input type="file" id="ecgFile" accept=".csv">
+        <div id="fileName"></div>
+
+        <div class="sampling">
+            <label for="samplingRate">Sampling Rate (Hz):</label>
+            <input type="number" id="samplingRate" value="360" min="1">
+        </div>
+
+        <button id="uploadBtn" onclick="analyzeECG()">Run AI Analysis</button>
+    </div>
+
+    <p id="message"></p>
+    <p class="note">The current trained model requires ECG data sampled at 360 Hz. Ensure the uploaded signal matches the expected format and units.</p>
+</div>
+
+<div class="results" id="results">
+
+    <div class="report-head">
+        <h1>PulseAI — ECG Analysis Report</h1>
+        <p>AI-powered experimental ECG signal analysis</p>
+        <p id="reportDate"></p>
+        <p id="reportId"></p>
+    </div>
+
+    <div class="report-actions" style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onclick="window.print()">Print / Save as PDF</button>
+
+        <button id="downloadPdfBtn" onclick="downloadPDFReport()">
+            Download ECG PDF Report
+        </button>
+
+        <button class="secondary" onclick="resetAnalysis()">New Analysis</button>
+    </div>
+
+    <h2 class="section-title">Analysis Overview</h2>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>HEART RATE</h3>
+            <p id="heartRate">--</p>
+            <small>Beats per minute</small>
+        </div>
+        <div class="stat-card">
+            <h3>DETECTED BEATS</h3>
+            <p id="totalBeats">--</p>
+            <small>R-peak detections</small>
+        </div>
+        <div class="stat-card">
+            <h3>ABNORMAL BEATS</h3>
+            <p id="abnormalBeats">--</p>
+            <small>Non-N classified beats</small>
+        </div>
+        <div class="stat-card">
+            <h3>ABNORMAL BURDEN</h3>
+            <p id="abnormalBurden">--</p>
+            <small>Percentage of classified beats</small>
+        </div>
+        <div class="stat-card">
+            <h3>MODEL CONFIDENCE</h3>
+            <p id="confidence">--</p>
+            <small>Average maximum class probability</small>
+        </div>
+        <div class="stat-card">
+            <h3>TOTAL SAMPLES</h3>
+            <p id="totalSamples">--</p>
+            <small>Uploaded signal samples</small>
+        </div>
+    </div>
+
+    <div class="result-banner">
+        <strong>AI Analysis Status:</strong>
+        <span id="analysisStatus">Analysis completed</span>
+        <br>
+        <span id="analysisSummary" class="subtitle"></span>
+    </div>
+
+    <h2 class="section-title">Heartbeat Classification</h2>
+
+    <div class="grid-two">
+        <div class="card">
+            <h2>Class Distribution</h2>
+            <p class="subtitle">Number of heartbeats predicted in each AAMI class.</p>
+            <div class="chart-wrap">
+                <canvas id="classChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Class-wise Statistics</h2>
+            <p class="subtitle">Predicted heartbeat distribution.</p>
+            <div class="class-info" id="classInfo"></div>
+        </div>
+    </div>
+
+    <h2 class="section-title">ECG Signal Visualization</h2>
+
+    <div class="card">
+        <h2>ECG Waveform</h2>
+        <p class="subtitle">Signal visualization generated by the backend processing pipeline.</p>
+        <img id="ecgGraph" class="graph" alt="ECG signal visualization">
+    </div>
+
+    <h2 class="section-title">Beat-by-Beat AI Predictions</h2>
+
+    <div class="card">
+        <p class="subtitle">Individual heartbeat predictions and model probability confidence.</p>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Beat</th>
+                        <th>R-Peak Index</th>
+                        <th>Predicted Class</th>
+                        <th>Confidence</th>
+                    </tr>
+                </thead>
+                <tbody id="beatTable"></tbody>
+            </table>
+        </div>
+        <p class="note" id="tableNote"></p>
+    </div>
+
+    <div class="card">
+        <h2>Understanding the AI Classes</h2>
+        <div class="class-info">
+            <div class="class-box"><b>N</b><p>Normal beat</p></div>
+            <div class="class-box"><b>S</b><p>Supraventricular ectopic beat</p></div>
+            <div class="class-box"><b>V</b><p>Ventricular ectopic beat</p></div>
+            <div class="class-box"><b>F</b><p>Fusion beat</p></div>
+            <div class="class-box"><b>Q</b><p>Unknown or paced category</p></div>
+        </div>
+        <p class="note">These are research classification categories based on the model's training labels. They are not confirmed diagnoses.</p>
+    </div>
+
+    <div class="card">
+        <h2>Important Medical Disclaimer</h2>
+        <p class="note">
+            PulseAI is an academic research prototype. Its predictions are experimental and must not be used for diagnosis, treatment decisions or emergency assessment. Model confidence is not a measure of clinical accuracy. ECG results should be interpreted by a qualified healthcare professional.
+        </p>
+    </div>
+
+</div>
+</div>
+
+<footer>PulseAI | AI-Powered Patient Health Monitoring and Early Disease Prediction</footer>
+
+<script>
+const fileInput = document.getElementById("ecgFile");
+
+let classChart = null;
+let currentGraphUrl = null;
+let currentAnalysisId = null;
+
+fileInput.addEventListener("change", function(){
+    const file = this.files[0];
+
+    document.getElementById("fileName").textContent =
+        file ? "Selected file: " + file.name : "";
+
+    document.getElementById("results").style.display = "none";
+    currentAnalysisId = null;
+});
+
+function showMessage(message, color){
+    const element = document.getElementById("message");
+    element.textContent = message;
+    element.style.color = color;
+}
+
+function displayValue(value, suffix=""){
+    return value === null || value === undefined
+        ? "Unavailable"
+        : value + suffix;
+}
+
+
+// DOWNLOAD SAVED PDF REPORT
+function downloadPDFReport(){
+
+    if(!currentAnalysisId){
+        showMessage(
+            "No saved analysis report is available.",
+            "red"
+        );
+        return;
+    }
+
+    const button = document.getElementById("downloadPdfBtn");
+
+    button.disabled = true;
+    button.textContent = "Preparing PDF...";
+
+    showMessage("Generating your ECG PDF report...", "#176b68");
+
+    window.location.href =
+        "/api/reports/ecg/" + encodeURIComponent(currentAnalysisId) + "/pdf";
+
+    setTimeout(() => {
+        button.disabled = false;
+        button.textContent = "Download ECG PDF Report";
+        showMessage("PDF download requested.", "green");
+    }, 2000);
+}
+
+
+async function analyzeECG(){
+
+    const file = fileInput.files[0];
+    const samplingRate = Number(
+        document.getElementById("samplingRate").value
+    );
+
+    const button = document.getElementById("uploadBtn");
+
+    if(!file){
+        showMessage("Please select an ECG CSV file.", "red");
+        return;
+    }
+
+    if(!file.name.toLowerCase().endsWith(".csv")){
+        showMessage("Only CSV files are allowed.", "red");
+        return;
+    }
+
+    if(file.size > 10 * 1024 * 1024){
+        showMessage("File size must not exceed 10 MB.", "red");
+        return;
+    }
+
+    if(!samplingRate || samplingRate <= 0){
+        showMessage("Enter a valid sampling rate.", "red");
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Analyzing ECG...";
+
+    document.getElementById("results").style.display = "none";
+    currentAnalysisId = null;
+
+    showMessage(
+        "Processing ECG signal and running AI classification. Please wait...",
+        "#176b68"
+    );
+
+    try{
+
+        const formData = new FormData();
+
+        formData.append("file", file);
+        formData.append("sampling_rate", samplingRate);
+
+        const response = await fetch("/api/ecg/analyze", {
+            method: "POST",
+            body: formData,
+            credentials: "same-origin"
+        });
+
+        const data = await response.json();
+
+        if(!response.ok){
+            throw new Error(data.detail || "ECG analysis failed.");
+        }
+
+        renderResults(data, file.name);
+
+        try{
+
+            const graphForm = new FormData();
+
+            graphForm.append("file", file);
+            graphForm.append("sampling_rate", samplingRate);
+
+            const graphResponse = await fetch("/api/ecg/visualize", {
+                method: "POST",
+                body: graphForm,
+                credentials: "same-origin"
+            });
+
+            if(graphResponse.ok){
+
+                const blob = await graphResponse.blob();
+                const graphUrl = URL.createObjectURL(blob);
+
+                if(currentGraphUrl){
+                    URL.revokeObjectURL(currentGraphUrl);
+                }
+
+                currentGraphUrl = graphUrl;
+
+                document.getElementById("ecgGraph").src = graphUrl;
+
+            }else{
+
+                document.getElementById("ecgGraph").alt =
+                    "ECG graph could not be generated.";
+            }
+
+        }catch(graphError){
+
+            console.error("Graph error:", graphError);
+        }
+
+        document.getElementById("results").style.display = "block";
+
+        showMessage(
+            "AI ECG analysis completed successfully.",
+            "green"
+        );
+
+        document.getElementById("results").scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }catch(error){
+
+        showMessage(error.message, "red");
+
+    }finally{
+
+        button.disabled = false;
+        button.textContent = "Run AI Analysis";
+    }
+}
+
+
+function renderResults(data, fileName){
+
+    // Capture database analysis ID for PDF download
+    currentAnalysisId = data.analysis_id ?? null;
+
+    const pdfButton = document.getElementById("downloadPdfBtn");
+
+    pdfButton.disabled = !currentAnalysisId;
+
+    pdfButton.textContent = currentAnalysisId
+        ? "Download ECG PDF Report"
+        : "PDF Report Unavailable";
+
+    document.getElementById("heartRate").textContent =
+        displayValue(data.heart_rate_bpm, " BPM");
+
+    document.getElementById("totalBeats").textContent =
+        displayValue(data.total_beats);
+
+    document.getElementById("totalSamples").textContent =
+        displayValue(data.total_samples);
+
+    document.getElementById("abnormalBeats").textContent =
+        displayValue(data.abnormal_beats);
+
+    document.getElementById("abnormalBurden").textContent =
+        displayValue(data.abnormal_burden_percent, "%");
+
+    document.getElementById("confidence").textContent =
+        displayValue(data.average_model_confidence_percent, "%");
+
+    document.getElementById("analysisStatus").textContent =
+        data.risk_level || "Experimental analysis";
+
+    document.getElementById("analysisSummary").textContent =
+        data.disclaimer ||
+        "Experimental AI classification. Not a medical diagnosis.";
+
+    document.getElementById("reportDate").textContent =
+        "Generated: " + new Date().toLocaleString();
+
+    document.getElementById("reportId").textContent =
+        "Analysis ID: " +
+        (data.analysis_id ?? "Not available") +
+        " | File: " + fileName;
+
+    renderClassChart(data.class_counts || {});
+
+    renderClassInfo(
+        data.class_counts || {},
+        data.class_percentages || {}
+    );
+
+    renderBeatTable(data.beat_predictions || []);
+}
+
+
+function renderClassChart(counts){
+
+    const labels = ["N", "S", "V", "F", "Q"];
+
+    const values = labels.map(
+        label => Number(counts[label] || 0)
+    );
+
+    if(classChart){
+        classChart.destroy();
+    }
+
+    classChart = new Chart(
+        document.getElementById("classChart"),
+        {
+            type: "bar",
+
+            data: {
+                labels: labels,
+
+                datasets: [{
+                    label: "Predicted beats",
+                    data: values,
+
+                    backgroundColor: [
+                        "#176b68",
+                        "#e0a23b",
+                        "#d45b61",
+                        "#7b70bd",
+                        "#82939a"
+                    ],
+
+                    borderRadius: 7
+                }]
+            },
+
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+
+                plugins: {
+                    legend: { display: false }
+                },
+
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        }
+    );
+}
+
+
+function renderClassInfo(counts, percentages){
+
+    const labels = ["N", "S", "V", "F", "Q"];
+
+    document.getElementById("classInfo").innerHTML =
+        labels.map(label => `
+            <div class="class-box">
+                <b>${Number(counts[label] || 0)}</b>
+                <p>Class ${label}</p>
+                <p>${Number(percentages[label] || 0)}%</p>
+            </div>
+        `).join("");
+}
+
+
+function renderBeatTable(beats){
+
+    const tbody = document.getElementById("beatTable");
+
+    if(!beats.length){
+
+        tbody.innerHTML =
+            '<tr><td colspan="4">No heartbeat predictions available.</td></tr>';
+
+        document.getElementById("tableNote").textContent = "";
+
+        return;
+    }
+
+    const displayLimit = 100;
+
+    tbody.innerHTML = beats.slice(0, displayLimit).map(
+        (beat, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${Number(beat.r_peak_index)}</td>
+                <td><span class="pill">${String(beat.predicted_class)}</span></td>
+                <td>${Number(beat.confidence).toFixed(2)}%</td>
+            </tr>
+        `
+    ).join("");
+
+    document.getElementById("tableNote").textContent =
+        beats.length > displayLimit
+        ? `Showing first ${displayLimit} of ${beats.length} classified beats.`
+        : `Showing all ${beats.length} classified beats.`;
+}
+
+
+function resetAnalysis(){
+
+    document.getElementById("results").style.display = "none";
+
+    fileInput.value = "";
+
+    document.getElementById("fileName").textContent = "";
+
+    showMessage("", "#176b68");
+
+    currentAnalysisId = null;
+
+    if(currentGraphUrl){
+
+        URL.revokeObjectURL(currentGraphUrl);
+        currentGraphUrl = null;
+    }
+
+    document.getElementById("ecgGraph").removeAttribute("src");
+
+    if(classChart){
+
+        classChart.destroy();
+        classChart = null;
+    }
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+</script>
+
+</body>
+</html>

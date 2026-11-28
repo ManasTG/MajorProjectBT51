@@ -163,3 +163,11 @@ cython_debug/
 data/mitdb/*
 
 data.db
+
+# PulseAI local files
+.env
+.env.*
+*.db
+uploads/
+datasets/
+data/

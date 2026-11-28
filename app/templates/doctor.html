@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseAI | Doctor Dashboard</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#f3f7fa;color:#20343b}
+header{background:#123f50;color:white;padding:20px 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+header h2{font-size:23px}
+header small{color:#c3dce1}
+.container{max-width:1250px;margin:35px auto;padding:0 20px}
+.welcome{margin-bottom:25px}
+.welcome h1{font-size:28px;margin-bottom:8px}
+.welcome p{color:#718087}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.stat{background:white;padding:23px;border-radius:12px;border-left:4px solid #176b68;box-shadow:0 3px 12px #193b4a0a}
+.stat p{font-size:13px;color:#718087;margin-bottom:12px}
+.stat h2{font-size:29px;color:#176b68}
+.card{background:white;padding:24px;border-radius:13px;margin-top:25px;box-shadow:0 3px 12px #193b4a0a}
+.card h2{font-size:20px;margin-bottom:8px}
+.subtitle{font-size:13px;color:#718087;line-height:1.6}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+input{padding:11px 13px;border:1px solid #d4dfe1;border-radius:7px;min-width:230px;flex:1}
+button{background:#176b68;color:white;border:0;padding:11px 17px;border-radius:7px;cursor:pointer;font-weight:bold}
+button:hover{background:#125653}
+.table-wrap{overflow-x:auto;margin-top:20px}
+table{width:100%;border-collapse:collapse;min-width:750px;font-size:13px}
+th,td{padding:15px 12px;text-align:left;border-bottom:1px solid #edf0f1}
+th{background:#f4f8f8;color:#52676d}
+tr:hover{background:#f8fbfb}
+.pill{display:inline-block;padding:6px 10px;border-radius:20px;background:#e7f2f1;color:#176b68;font-size:11px}
+.view{padding:8px 12px;font-size:12px}
+#message{margin-top:16px;color:#718087;font-size:13px}
+#details{display:none}
+.detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.detail-box{background:#f4f8f8;padding:17px;border-radius:9px}
+.detail-box small{color:#718087}
+.detail-box h3{color:#176b68;margin-top:8px}
+.back{color:#176b68;text-decoration:none;font-weight:bold;display:inline-block;margin-top:18px}
+.empty{text-align:center;padding:35px;color:#718087}
+footer{text-align:center;padding:30px;color:#819196;font-size:12px}
+@media(max-width:600px){.card{padding:17px}.welcome h1{font-size:23px}}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div>
+        <h2>PulseAI</h2>
+        <small>DOCTOR CONTROL PANEL</small>
+    </div>
+    <div>Welcome, Dr. {{ user.name }}</div>
+</header>
+
+<div class="container">
+
+    <div class="welcome">
+        <h1>Doctor Dashboard</h1>
+        <p>Patient overview and ECG analysis monitoring.</p>
+    </div>
+
+    <div class="stats">
+        <div class="stat">
+            <p>REGISTERED PATIENTS</p>
+            <h2 id="totalPatients">--</h2>
+        </div>
+        <div class="stat">
+            <p>TOTAL ECG ANALYSES</p>
+            <h2 id="totalAnalyses">--</h2>
+        </div>
+        <div class="stat">
+            <p>PATIENTS WITH ANALYSIS</p>
+            <h2 id="analyzedPatients">--</h2>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Patient Directory</h2>
+        <p class="subtitle">View registered patients and their latest ECG analysis.</p>
+
+        <div class="toolbar">
+            <input type="text" id="search" placeholder="Search by patient name or email..." oninput="filterPatients()">
+            <button onclick="loadDashboard()">Refresh Data</button>
+        </div>
+
+        <p id="message">Loading patient records...</p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient ID</th>
+                        <th>Patient Name</th>
+                        <th>Age</th>
+                        <th>Total Analyses</th>
+                        <th>Latest Heart Rate</th>
+                        <th>Latest Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="patientTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card" id="details">
+        <h2 id="patientTitle">Patient History</h2>
+        <p class="subtitle">ECG analysis history for the selected patient.</p>
+
+        <div class="detail-grid">
+            <div class="detail-box">
+                <small>Patient ID</small>
+                <h3 id="detailId">--</h3>
+            </div>
+            <div class="detail-box">
+                <small>Age</small>
+                <h3 id="detailAge">--</h3>
+            </div>
+            <div class="detail-box">
+                <small>Gender</small>
+                <h3 id="detailGender">--</h3>
+            </div>
+            <div class="detail-box">
+                <small>Total Records</small>
+                <h3 id="detailRecords">--</h3>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Analysis ID</th>
+                        <th>Date</th>
+                        <th>Heart Rate</th>
+                        <th>Total Beats</th>
+                        <th>Abnormal Burden</th>
+                        <th>Classification Status</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTable"></tbody>
+            </table>
+        </div>
+
+        <a href="#" class="back" onclick="closeDetails();return false;">← Back to Patient List</a>
+    </div>
+
+</div>
+
+<footer>PulseAI | Academic Research Prototype | Not a clinical diagnostic system</footer>
+
+<script>
+let allPatients = [];
+
+async function loadDashboard(){
+
+    const message = document.getElementById("message");
+    message.textContent = "Loading patient records...";
+
+    try{
+        const response = await fetch("/api/doctor/dashboard",{
+            credentials:"same-origin"
+        });
+
+        const data = await response.json();
+
+        if(!response.ok){
+            throw new Error(data.detail || "Unable to load dashboard.");
+        }
+
+        allPatients = data.patients || [];
+
+        document.getElementById("totalPatients").textContent =
+            data.total_patients ?? 0;
+
+        document.getElementById("totalAnalyses").textContent =
+            data.total_analyses ?? 0;
+
+        document.getElementById("analyzedPatients").textContent =
+            allPatients.filter(p => p.latest_analysis !== null).length;
+
+        renderPatients(allPatients);
+
+        message.textContent =
+            "Dashboard updated successfully.";
+
+    }catch(error){
+        message.textContent = error.message;
+    }
+}
+
+function renderPatients(patients){
+
+    const tbody = document.getElementById("patientTable");
+
+    if(!patients.length){
+        tbody.innerHTML =
+            '<tr><td colspan="7" class="empty">No patients registered yet.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = patients.map(p => {
+
+        const latest = p.latest_analysis;
+
+        return `
+        <tr>
+            <td>#${p.patient_id}</td>
+            <td>
+                <strong>${escapeHTML(p.name || "Unknown")}</strong><br>
+                <small>${escapeHTML(p.email || "")}</small>
+            </td>
+            <td>${p.age || "Not provided"}</td>
+            <td>${p.total_analyses}</td>
+            <td>${latest && latest.heart_rate_bpm !== null
+                ? Number(latest.heart_rate_bpm).toFixed(1) + " BPM"
+                : "No data"}</td>
+            <td><span class="pill">${escapeHTML(latest?.risk_level || "No analysis")}</span></td>
+            <td>
+                <button class="view" onclick="viewHistory(${p.patient_id})">
+                    View History
+                </button>
+            </td>
+        </tr>`;
+    }).join("");
+}
+
+function filterPatients(){
+
+    const query = document.getElementById("search").value.toLowerCase();
+
+    const filtered = allPatients.filter(p =>
+        (p.name || "").toLowerCase().includes(query) ||
+        (p.email || "").toLowerCase().includes(query) ||
+        String(p.patient_id).includes(query)
+    );
+
+    renderPatients(filtered);
+}
+
+async function viewHistory(patientId){
+
+    const details = document.getElementById("details");
+    const tbody = document.getElementById("historyTable");
+
+    details.style.display = "block";
+    document.getElementById("patientTitle").textContent =
+        "Patient #" + patientId + " — ECG History";
+
+    tbody.innerHTML =
+        '<tr><td colspan="6">Loading history...</td></tr>';
+
+    details.scrollIntoView({behavior:"smooth"});
+
+    try{
+
+        const response = await fetch(
+            `/api/doctor/patients/${patientId}/history`,
+            {credentials:"same-origin"}
+        );
+
+        const data = await response.json();
+
+        if(!response.ok){
+            throw new Error(data.detail || "Unable to load patient history.");
+        }
+
+        const p = data.patient;
+
+        document.getElementById("detailId").textContent = p.id;
+        document.getElementById("detailAge").textContent =
+            p.age || "Not provided";
+        document.getElementById("detailGender").textContent =
+            p.gender || "Not provided";
+        document.getElementById("detailRecords").textContent =
+            data.total_records;
+
+        if(!data.history.length){
+            tbody.innerHTML =
+                '<tr><td colspan="6" class="empty">No ECG analysis records available.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.history.map(r => `
+            <tr>
+                <td>#${r.analysis_id}</td>
+                <td>${new Date(r.created_at).toLocaleString()}</td>
+                <td>${r.heart_rate_bpm == null ? "Unavailable" : Number(r.heart_rate_bpm).toFixed(1) + " BPM"}</td>
+                <td>${r.total_beats ?? "--"}</td>
+                <td>${escapeHTML(r.abnormal_beat_burden || "--")}</td>
+                <td><span class="pill">${escapeHTML(r.risk_level || "Experimental")}</span></td>
+            </tr>
+        `).join("");
+
+    }catch(error){
+        tbody.innerHTML =
+            `<tr><td colspan="6">${escapeHTML(error.message)}</td></tr>`;
+    }
+}
+
+function closeDetails(){
+    document.getElementById("details").style.display = "none";
+}
+
+function escapeHTML(value){
+    return String(value).replace(/[&<>"']/g, char => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+    })[char]);
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

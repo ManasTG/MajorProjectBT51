@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulseAI | Intelligent ECG Monitoring</title>
+<meta name="description" content="PulseAI is an academic AI-powered ECG monitoring and heartbeat analysis platform.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --navy:#092b35;
+    --navy2:#103e46;
+    --teal:#078b80;
+    --mint:#9ce5ce;
+    --light:#f3f8f6;
+    --text:#19383d;
+    --muted:#6c8583;
+    --white:#fff;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+    font-family:'DM Sans',sans-serif;
+    color:var(--text);
+    background:white;
+    overflow-x:hidden;
+}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit}
+.container{width:min(1160px,90%);margin:auto}
+.tag{
+    display:inline-block;
+    color:var(--teal);
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+.section-head{
+    max-width:700px;
+    margin:0 auto 55px;
+    text-align:center;
+}
+.section-head h2{
+    font:800 clamp(32px,4vw,47px)/1.16 'Manrope',sans-serif;
+    letter-spacing:-1.8px;
+    color:var(--navy);
+    margin:15px 0;
+}
+.section-head p{
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.9;
+}
+
+/* NAVBAR */
+.navbar{
+    height:82px;
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:rgba(255,255,255,.96);
+    backdrop-filter:blur(15px);
+    border-bottom:1px solid #e8efec;
+}
+.nav-inner{
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+}
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font:800 24px 'Manrope',sans-serif;
+    color:var(--navy);
+}
+.brand-icon{
+    width:39px;height:39px;
+    display:grid;place-items:center;
+    border-radius:12px;
+    background:var(--teal);
+    color:white;font-size:23px;
+}
+.nav-links{
+    display:flex;
+    align-items:center;
+    gap:32px;
+}
+.nav-links a{
+    font-size:13px;
+    font-weight:600;
+    color:#526b6b;
+    transition:.2s;
+}
+.nav-links a:hover{color:var(--teal)}
+.nav-actions{display:flex;align-items:center;gap:12px}
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:13px 22px;
+    border-radius:8px;
+    font-size:13px;
+    font-weight:700;
+    transition:.25s;
+    cursor:pointer;
+}
+.btn-outline{border:1px solid #d8e5e0;color:var(--navy)}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal)}
+.btn-primary{background:var(--teal);color:white}
+.btn-primary:hover{
+    background:#066e67;
+    transform:translateY(-2px);
+    box-shadow:0 10px 25px #078b8030;
+}
+.menu-btn{
+    display:none;
+    background:none;border:0;
+    font-size:27px;color:var(--navy);
+    cursor:pointer;
+}
+
+/* HERO */
+.hero{
+    min-height:650px;
+    position:relative;
+    display:flex;
+    align-items:center;
+    color:white;
+    background:
+      linear-gradient(90deg,rgba(4,30,39,.94) 0%,rgba(4,38,45,.83) 48%,rgba(4,38,45,.35) 100%),
+      url("https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=2000&q=85");
+    background-size:cover;
+    background-position:center;
+}
+.hero-content{
+    position:relative;
+    z-index:2;
+    max-width:690px;
+    padding:100px 0;
+}
+.hero-tag{
+    display:inline-flex;
+    gap:9px;
+    align-items:center;
+    color:#a5ead5;
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:25px;
+}
+.hero-tag span{
+    width:8px;height:8px;border-radius:50%;
+    background:#7be0bd;
+    box-shadow:0 0 14px #7be0bd;
+}
+.hero h1{
+    font:800 clamp(43px,6vw,72px)/1.08 'Manrope',sans-serif;
+    letter-spacing:-3px;
+    margin-bottom:25px;
+}
+.hero h1 em{font-style:normal;color:#8ce1c6}
+.hero p{
+    max-width:550px;
+    color:#d0e0dc;
+    font-size:15px;
+    line-height:1.9;
+    margin-bottom:32px;
+}
+.hero-actions{display:flex;gap:13px;flex-wrap:wrap}
+.hero .btn{padding:15px 25px}
+.btn-light{background:white;color:var(--navy)}
+.btn-light:hover{background:#dff6ed;transform:translateY(-2px)}
+.btn-glass{
+    border:1px solid #ffffff70;
+    color:white;
+    background:#ffffff12;
+}
+.btn-glass:hover{background:#ffffff25}
+.hero-note{
+    margin-top:35px;
+    color:#b9d2ca;
+    font-size:11px;
+}
+
+/* TRUST STRIP */
+.trust-strip{
+    padding:25px 0;
+    background:white;
+    border-bottom:1px solid #eaf0ed;
+}
+.trust-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:20px;
+}
+.trust-item{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:11px;
+    color:#46615e;
+    font-size:12px;
+    font-weight:700;
+}
+.trust-icon{font-size:21px;color:var(--teal)}
+
+/* INTRO */
+.intro{padding:105px 0;background:#fff}
+.intro-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    align-items:center;
+    gap:75px;
+}
+.intro-image{
+    height:440px;
+    border-radius:20px;
+    background:
+      linear-gradient(0deg,#092b3530,transparent),
+      url("https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=85");
+    background-size:cover;
+    background-position:center;
+    position:relative;
+}
+.image-caption{
+    position:absolute;
+    bottom:22px;left:22px;
+    padding:15px 19px;
+    border-radius:12px;
+    background:#ffffffed;
+    color:var(--navy);
+    font-size:12px;
+    font-weight:700;
+}
+.intro-copy h2{
+    font:800 clamp(32px,4vw,45px)/1.2 'Manrope',sans-serif;
+    letter-spacing:-1.7px;
+    margin:17px 0 20px;
+    color:var(--navy);
+}
+.intro-copy p{
+    font-size:14px;
+    color:var(--muted);
+    line-height:2;
+    margin-bottom:20px;
+}
+.intro-list{list-style:none;margin:25px 0 30px}
+.intro-list li{
+    padding:10px 0;
+    font-size:13px;
+    font-weight:600;
+    color:#365653;
+}
+.intro-list li span{color:var(--teal);margin-right:10px}
+
+/* FEATURES */
+.features{background:var(--light);padding:105px 0}
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+}
+.feature{
+    padding:30px;
+    min-height:245px;
+    border:1px solid #e2ebe7;
+    border-radius:17px;
+    background:white;
+    transition:.35s;
+    position:relative;
+    overflow:hidden;
+}
+.feature:after{
+    content:"";
+    position:absolute;
+    width:130px;height:130px;
+    border-radius:50%;
+    background:#e8f7f0;
+    right:-65px;bottom:-65px;
+    transition:.35s;
+}
+.feature:hover{
+    transform:translateY(-8px);
+    box-shadow:0 22px 55px #143e3215;
+    border-color:#9bd9c4;
+}
+.feature:hover:after{transform:scale(1.6)}
+.feature-icon{
+    width:54px;height:54px;
+    border-radius:15px;
+    display:grid;place-items:center;
+    background:#e8f7f0;
+    font-size:24px;
+    margin-bottom:25px;
+}
+.feature h3{
+    font:800 17px 'Manrope',sans-serif;
+    margin-bottom:12px;
+    color:var(--navy);
+}
+.feature p{
+    font-size:12px;
+    line-height:1.9;
+    color:var(--muted);
+    max-width:290px;
+    position:relative;z-index:1;
+}
+.feature-no{
+    margin-top:25px;
+    font-size:10px;
+    letter-spacing:2px;
+    font-weight:800;
+    color:#91aaa2;
+}
+
+/* MEDICAL BANNER */
+.medical-banner{
+    padding:105px 0;
+    background:#092d2e;
+    color:white;
+}
+.medical-banner-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:65px;
+    align-items:center;
+}
+.medical-banner-image{
+    height:440px;
+    border-radius:22px;
+    background:
+      linear-gradient(0deg,rgba(4,31,35,.12),transparent),
+      url("https://images.unsplash.com/photo-1551076805-e1869033e561?auto=format&fit=crop&w=1200&q=85");
+    background-size:cover;
+    background-position:center;
+}
+.medical-banner-copy .tag{color:#8de2cb}
+.medical-banner-copy h2{
+    font:800 clamp(32px,4vw,46px)/1.18 'Manrope',sans-serif;
+    letter-spacing:-1.7px;
+    margin:15px 0 20px;
+}
+.medical-banner-copy p{
+    color:#c0d8d0;
+    font-size:13px;
+    line-height:2;
+    margin-bottom:27px;
+}
+.medical-points{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:20px;
+}
+.medical-point{
+    border-top:1px solid #315750;
+    padding-top:15px;
+}
+.medical-point strong{
+    display:block;
+    color:#8de2cb;
+    font:800 22px 'Manrope',sans-serif;
+    margin-bottom:6px;
+}
+.medical-point span{font-size:11px;color:#c1d6cf}
+
+/* PLATFORM SHOWCASE */
+.showcase{background:#f4f8f6;padding:110px 0}
+.showcase-grid{
+    display:grid;
+    grid-template-columns:.85fr 1.15fr;
+    gap:65px;
+    align-items:center;
+}
+.showcase-copy h2{
+    font:800 clamp(31px,3.7vw,43px)/1.2 'Manrope',sans-serif;
+    letter-spacing:-1.5px;
+    color:var(--navy);
+    margin:15px 0 20px;
+}
+.showcase-copy p{
+    color:var(--muted);
+    font-size:13px;
+    line-height:2;
+    margin-bottom:25px;
+}
+.showcase-points{list-style:none;margin-bottom:30px}
+.showcase-points li{
+    padding:10px 0;
+    font-size:13px;
+    font-weight:600;
+    color:#365653;
+}
+.showcase-points span{color:var(--teal);margin-right:9px}
+.dashboard{
+    background:white;
+    border:1px solid #e3ece7;
+    border-radius:20px;
+    padding:25px;
+    box-shadow:0 25px 70px #123f3218;
+}
+.dash-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:23px;
+}
+.dash-top strong{
+    color:var(--navy);
+    font:800 16px 'Manrope',sans-serif;
+}
+.dash-status{
+    background:#e7f7ef;
+    color:#138568;
+    border-radius:30px;
+    padding:7px 11px;
+    font-size:10px;
+    font-weight:800;
+}
+.dash-cards{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+}
+.dash-card{
+    padding:15px;
+    border:1px solid #edf1ef;
+    border-radius:12px;
+    background:#fbfdfc;
+}
+.dash-card span{
+    display:block;
+    font-size:10px;
+    color:#829894;
+    margin-bottom:10px;
+}
+.dash-card strong{
+    font:800 23px 'Manrope',sans-serif;
+    color:var(--navy);
+}
+.dash-card small{font-size:10px;color:#078b80}
+.ecg-panel{
+    margin-top:18px;
+    border:1px solid #edf1ef;
+    border-radius:13px;
+    padding:18px;
+}
+.ecg-panel-title{
+    display:flex;justify-content:space-between;
+    color:var(--navy);
+    font-size:12px;font-weight:800;
+    margin-bottom:15px;
+}
+.ecg-panel-title small{color:#839894;font-weight:500}
+.ecg-svg{width:100%;height:115px;display:block}
+.dash-bottom{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:15px;
+}
+.dash-info{
+    background:#f7faf8;
+    border-radius:10px;
+    padding:14px;
+}
+.dash-info span{display:block;font-size:10px;color:#81948f;margin-bottom:7px}
+.dash-info strong{font-size:12px;color:var(--navy)}
+
+/* WORKFLOW */
+.workflow{padding:105px 0;background:white}
+.steps{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:16px;
+}
+.step{
+    padding:28px 22px;
+    border:1px solid #e3ece7;
+    border-radius:16px;
+    min-height:235px;
+    transition:.3s;
+}
+.step:hover{
+    transform:translateY(-7px);
+    box-shadow:0 18px 40px #143e3210;
+    border-color:#8dcdb8;
+}
+.step-num{
+    width:45px;height:45px;
+    display:grid;place-items:center;
+    border-radius:13px;
+    background:#e8f7f0;
+    color:var(--teal);
+    font-size:14px;font-weight:800;
+    margin-bottom:24px;
+}
+.step h3{
+    font:800 15px 'Manrope',sans-serif;
+    color:var(--navy);
+    margin-bottom:12px;
+}
+.step p{font-size:12px;line-height:1.9;color:var(--muted)}
+
+/* TECHNOLOGY */
+.technology{
+    padding:100px 0;
+    background:#092d2e;
+    color:white;
+}
+.technology .tag{color:#8de2cb}
+.technology .section-head h2{color:white}
+.technology .section-head p{color:#b7d1c8}
+.tech-grid{
+    max-width:900px;
+    margin:auto;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:14px;
+}
+.tech{
+    padding:15px 23px;
+    background:#123d3b;
+    border:1px solid #315b52;
+    color:#e0f3eb;
+    border-radius:10px;
+    font-size:13px;
+    font-weight:700;
+    transition:.3s;
+}
+.tech:hover{
+    background:#087f78;
+    color:white;
+    border-color:#8de2cb;
+    transform:translateY(-3px);
+}
+.tech-note{
+    max-width:700px;
+    text-align:center;
+    color:#a9c9bf;
+    font-size:11px;
+    line-height:1.8;
+    margin:30px auto 0;
+}
+
+/* CTA */
+.cta{padding:95px 0;background:#f3f8f5}
+.cta-box{
+    min-height:340px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:50px 25px;
+    color:white;
+    background:
+      linear-gradient(90deg,rgba(4,34,38,.91),rgba(4,50,49,.76)),
+      url("https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1800&q=85");
+    background-size:cover;
+    background-position:center;
+    border-radius:24px;
+    box-shadow:0 25px 65px #123f3218;
+}
+.cta-box h2{
+    font:800 clamp(30px,4vw,45px)/1.2 'Manrope',sans-serif;
+    max-width:750px;
+    margin:15px 0;
+}
+.cta-box p{
+    max-width:570px;
+    color:#d1e1dc;
+    font-size:13px;
+    line-height:1.9;
+    margin-bottom:25px;
+}
+.cta-box .tag{color:#9be6cf}
+
+/* FOOTER */
+footer{
+    background:#071f22;
+    padding:70px 0 25px;
+    color:white;
+}
+.footer-grid{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr;
+    gap:70px;
+}
+.footer-brand .brand{color:white;margin-bottom:20px}
+.footer-brand p{
+    max-width:360px;
+    color:#a9c3ba;
+    font-size:12px;
+    line-height:2;
+}
+.footer-col h4{
+    font:800 13px 'Manrope',sans-serif;
+    margin-bottom:20px;
+}
+.footer-col a{
+    display:block;
+    color:#a9c3ba;
+    font-size:12px;
+    margin-bottom:13px;
+    transition:.2s;
+}
+.footer-col a:hover{color:#8de2cb;padding-left:5px}
+.footer-bottom{
+    border-top:1px solid #23403d;
+    margin-top:50px;
+    padding-top:22px;
+    display:flex;
+    justify-content:space-between;
+    gap:20px;
+    color:#91aca2;
+    font-size:10px;
+    line-height:1.8;
+}
+
+/* ANIMATIONS */
+.reveal{
+    opacity:0;
+    transform:translateY(25px);
+    transition:opacity .7s ease,transform .7s ease;
+}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* RESPONSIVE */
+@media(max-width:950px){
+    .nav-links{gap:17px}
+    .intro-grid,.medical-banner-grid{grid-template-columns:1fr;gap:40px}
+    .showcase-grid{grid-template-columns:1fr;gap:40px}
+    .medical-banner-image{height:350px}
+    .steps{grid-template-columns:repeat(2,1fr)}
+    .feature-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+    .navbar{height:72px}
+    .menu-btn{display:block}
+    .nav-links{
+        display:none;
+        position:absolute;
+        top:72px;left:0;right:0;
+        background:white;
+        padding:22px 5%;
+        flex-direction:column;
+        align-items:flex-start;
+        gap:22px;
+        border-bottom:1px solid #e5eeea;
+        box-shadow:0 15px 25px #092b3510;
+    }
+    .nav-links.open{display:flex}
+    .nav-actions .btn-outline{display:none}
+    .hero{min-height:620px;background-position:60% center}
+    .hero-content{padding:80px 0}
+    .hero h1{letter-spacing:-2px}
+    .trust-grid{grid-template-columns:repeat(2,1fr);gap:20px}
+    .intro{padding:75px 0}
+    .intro-image{height:320px}
+    .features,.workflow,.technology,.showcase{padding:75px 0}
+    .feature-grid,.steps{grid-template-columns:1fr}
+    .feature{min-height:220px}
+    .medical-banner{padding:75px 0}
+    .medical-banner-image{height:270px}
+    .medical-banner-copy{text-align:center}
+    .medical-points{text-align:left}
+    .dashboard{padding:15px}
+    .cta{padding:65px 0}
+    .cta-box{padding:45px 20px}
+    .footer-grid{grid-template-columns:1fr;gap:35px}
+    .footer-bottom{flex-direction:column}
+}
+@media(max-width:420px){
+    .brand{font-size:21px}
+    .hero h1{font-size:42px}
+    .hero-actions{flex-direction:column;align-items:stretch}
+    .hero-actions .btn{width:100%}
+    .dash-cards{gap:6px}
+    .dash-card{padding:10px}
+    .dash-card strong{font-size:19px}
+    .dash-card span{font-size:9px}
+}
+</style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<header class="navbar">
+    <div class="container nav-inner">
+        <a href="/" class="brand">
+            <span class="brand-icon">⌁</span>
+            PulseAI
+        </a>
+
+        <nav class="nav-links" id="navLinks">
+            <a href="#home">Home</a>
+            <a href="#features">Capabilities</a>
+            <a href="#platform">Platform</a>
+            <a href="#workflow">Workflow</a>
+            <a href="#technology">Technology</a>
+        </nav>
+
+        <div class="nav-actions">
+            <a href="/auth" class="btn btn-outline">Log in</a>
+            <a href="/auth" class="btn btn-primary">Get Started →</a>
+        </div>
+
+        <button class="menu-btn" onclick="toggleMenu()" aria-label="Toggle navigation">☰</button>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" id="home">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-tag"><span></span> AI-POWERED ECG MONITORING</div>
+
+            <h1>Understanding Heart Health Through <em>Intelligent AI.</em></h1>
+
+            <p>
+                Explore an intelligent ECG analysis platform that combines
+                signal processing and machine learning to study heartbeat
+                patterns and support health monitoring research.
+            </p>
+
+            <div class="hero-actions">
+                <a href="/auth" class="btn btn-light">Explore PulseAI →</a>
+                <a href="#platform" class="btn btn-glass">Discover the Platform</a>
+            </div>
+
+            <div class="hero-note">
+                An academic research prototype exploring AI applications in healthcare.
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TRUST STRIP -->
+<section class="trust-strip">
+    <div class="container trust-grid">
+        <div class="trust-item"><span class="trust-icon">⌁</span> ECG Signal Processing</div>
+        <div class="trust-item"><span class="trust-icon">✧</span> Machine Learning</div>
+        <div class="trust-item"><span class="trust-icon">▤</span> Digital PDF Reports</div>
+        <div class="trust-item"><span class="trust-icon">◉</span> Patient Dashboards</div>
+    </div>
+</section>
+
+<!-- INTRO -->
+<section class="intro">
+    <div class="container intro-grid">
+        <div class="intro-image reveal">
+            <div class="image-caption">Technology meets healthcare research</div>
+        </div>
+
+        <div class="intro-copy reveal">
+            <span class="tag">ABOUT PULSEAI</span>
+            <h2>A Smarter Approach to ECG Data Analysis.</h2>
+            <p>
+                PulseAI is an academic AI-powered patient health monitoring
+                platform designed to explore heartbeat classification through
+                electrocardiogram (ECG) signals.
+            </p>
+            <p>
+                By combining digital signal processing with machine learning,
+                the platform transforms ECG recordings into structured
+                visual insights for research and demonstration.
+            </p>
+
+            <ul class="intro-list">
+                <li><span>✓</span> ECG signal upload and processing</li>
+                <li><span>✓</span> Machine learning based heartbeat classification</li>
+                <li><span>✓</span> Visual analysis and downloadable reports</li>
+            </ul>
+
+            <a href="/auth" class="btn btn-primary">Get Started →</a>
+        </div>
+    </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="features" id="features">
+    <div class="container">
+        <div class="section-head reveal">
+            <span class="tag">CORE CAPABILITIES</span>
+            <h2>Powerful Tools for ECG Analysis.</h2>
+            <p>
+                A connected set of features designed to explore ECG signals,
+                understand heartbeat patterns and organize patient analysis.
+            </p>
+        </div>
+
+        <div class="feature-grid">
+            <article class="feature reveal">
+                <div class="feature-icon">⌁</div>
+                <h3>ECG Signal Processing</h3>
+                <p>Upload ECG recordings and explore signal filtering, peak detection and heartbeat segmentation.</p>
+                <div class="feature-no">01 / SIGNAL ANALYSIS</div>
+            </article>
+
+            <article class="feature reveal">
+                <div class="feature-icon">✧</div>
+                <h3>AI Heartbeat Classification</h3>
+                <p>Apply a trained machine learning model to classify heartbeat patterns into supported categories.</p>
+                <div class="feature-no">02 / MACHINE LEARNING</div>
+            </article>
+
+            <article class="feature reveal">
+                <div class="feature-icon">▥</div>
+                <h3>Visual Analytics</h3>
+                <p>Explore heartbeat distributions, analysis metrics and visual summaries through charts.</p>
+                <div class="feature-no">03 / DATA VISUALIZATION</div>
+            </article>
+
+            <article class="feature reveal">
+                <div class="feature-icon">◉</div>
+                <h3>Patient Management</h3>
+                <p>Organize patient information and access analysis records through role-based dashboards.</p>
+                <div class="feature-no">04 / PATIENT RECORDS</div>
+            </article>
+
+            <article class="feature reveal">
+                <div class="feature-icon">▤</div>
+                <h3>PDF Analysis Reports</h3>
+                <p>Generate structured reports containing patient details, ECG metrics and model predictions.</p>
+                <div class="feature-no">05 / REPORT GENERATION</div>
+            </article>
+
+            <article class="feature reveal">
+                <div class="feature-icon">⌘</div>
+                <h3>Secure User Access</h3>
+                <p>Separate patient, doctor and administrator experiences through role-based access.</p>
+                <div class="feature-no">06 / ACCESS MANAGEMENT</div>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- MEDICAL IMAGE BANNER -->
+<section class="medical-banner">
+    <div class="container medical-banner-grid">
+        <div class="medical-banner-image reveal"></div>
+
+        <div class="medical-banner-copy reveal">
+            <span class="tag">THE PULSEAI APPROACH</span>
+            <h2>Turning Complex Signals Into Understandable Insights.</h2>
+            <p>
+                ECG recordings contain valuable information about electrical
+                activity of the heart. PulseAI explores how computational
+                techniques can help process and present this information
+                in an organized digital environment.
+            </p>
+
+            <div class="medical-points">
+                <div class="medical-point">
+                    <strong>01</strong>
+                    <span>Digital ECG signal input</span>
+                </div>
+                <div class="medical-point">
+                    <strong>02</strong>
+                    <span>Signal preprocessing</span>
+                </div>
+                <div class="medical-point">
+                    <strong>03</strong>
+                    <span>AI-based classification</span>
+                </div>
+                <div class="medical-point">
+                    <strong>04</strong>
+                    <span>Visual analysis reports</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PLATFORM SHOWCASE -->
+<section class="showcase" id="platform">
+    <div class="container showcase-grid">
+        <div class="showcase-copy reveal">
+            <span class="tag">THE PLATFORM</span>
+            <h2>One Platform. A Complete ECG Analysis Workflow.</h2>
+            <p>
+                PulseAI brings patient records, ECG analysis, machine learning
+                predictions and report generation into a unified interface.
+            </p>
+
+            <ul class="showcase-points">
+                <li><span>✓</span> Dedicated patient dashboard</li>
+                <li><span>✓</span> Doctor and administrator access</li>
+                <li><span>✓</span> ECG analysis history</li>
+                <li><span>✓</span> Downloadable analysis reports</li>
+            </ul>
+
+            <a href="/auth" class="btn btn-primary">Access the Platform →</a>
+        </div>
+
+        <div class="dashboard reveal">
+            <div class="dash-top">
+                <strong>ECG Analysis Overview</strong>
+                <span class="dash-status">● Interface Preview</span>
+            </div>
+
+            <div class="dash-cards">
+                <div class="dash-card">
+                    <span>Heart Rate</span>
+                    <strong>72</strong>
+                    <small>BPM · Example</small>
+                </div>
+                <div class="dash-card">
+                    <span>ECG Status</span>
+                    <strong>--</strong>
+                    <small>Awaiting analysis</small>
+                </div>
+                <div class="dash-card">
+                    <span>Records</span>
+                    <strong>--</strong>
+                    <small>Live data in app</small>
+                </div>
+            </div>
+
+            <div class="ecg-panel">
+                <div class="ecg-panel-title">
+                    ECG Signal Preview
+                    <small>Illustrative waveform</small>
+                </div>
+
+                <svg class="ecg-svg" viewBox="0 0 600 130" preserveAspectRatio="none">
+                    <defs>
+                        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e8f0ec" stroke-width="1"/>
+                        </pattern>
+                    </defs>
+                    <rect width="600" height="130" fill="url(#grid)"/>
+                    <path d="M0 66 L35 66 L48 63 L59 66 L76 66 L88 72 L100 66 L125 66 L137 55 L146 82 L158 18 L169 103 L181 66 L205 66 L230 66 L242 62 L255 66 L274 66 L286 72 L298 66 L325 66 L337 55 L346 82 L358 18 L369 103 L381 66 L405 66 L430 66 L442 62 L455 66 L474 66 L486 72 L498 66 L525 66 L537 55 L546 82 L558 18 L569 103 L581 66 L600 66"
+                          fill="none" stroke="#078b80" stroke-width="2.5" stroke-linejoin="round"/>
+                </svg>
+            </div>
+
+            <div class="dash-bottom">
+                <div class="dash-info">
+                    <span>Analysis Module</span>
+                    <strong>Machine Learning</strong>
+                </div>
+                <div class="dash-info">
+                    <span>Report Module</span>
+                    <strong>PDF Export</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WORKFLOW -->
+<section class="workflow" id="workflow">
+    <div class="container">
+        <div class="section-head reveal">
+            <span class="tag">HOW IT WORKS</span>
+            <h2>From ECG Upload to Structured Analysis.</h2>
+            <p>A simple workflow connects signal processing, model predictions and report generation.</p>
+        </div>
+
+        <div class="steps">
+            <article class="step reveal">
+                <div class="step-num">01</div>
+                <h3>Upload ECG</h3>
+                <p>Provide an ECG recording through the analysis interface for processing.</p>
+            </article>
+
+            <article class="step reveal">
+                <div class="step-num">02</div>
+                <h3>Process Signal</h3>
+                <p>Apply preprocessing, filtering and heartbeat segmentation to the input signal.</p>
+            </article>
+
+            <article class="step reveal">
+                <div class="step-num">03</div>
+                <h3>AI Analysis</h3>
+                <p>Use the trained model to classify heartbeat patterns and calculate analysis metrics.</p>
+            </article>
+
+            <article class="step reveal">
+                <div class="step-num">04</div>
+                <h3>View Reports</h3>
+                <p>Review visual summaries, analysis history and downloadable PDF reports.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- TECHNOLOGY -->
+<section class="technology" id="technology">
+    <div class="container">
+        <div class="section-head reveal">
+            <span class="tag">TECHNOLOGY STACK</span>
+            <h2>Built With Modern Technologies.</h2>
+            <p>
+                A combination of backend development, machine learning,
+                data processing and visualization technologies.
+            </p>
+        </div>
+
+        <div class="tech-grid reveal">
+            <div class="tech">Python</div>
+            <div class="tech">FastAPI</div>
+            <div class="tech">Scikit-learn</div>
+            <div class="tech">NumPy</div>
+            <div class="tech">SciPy</div>
+            <div class="tech">WFDB</div>
+            <div class="tech">SQLite</div>
+            <div class="tech">JavaScript</div>
+            <div class="tech">HTML & CSS</div>
+            <div class="tech">Chart.js</div>
+        </div>
+
+        <p class="tech-note">
+            The ECG classification model is developed using the MIT-BIH
+            Arrhythmia Database as part of an academic machine learning project.
+        </p>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <div class="cta-box reveal">
+            <span class="tag">EXPLORE PULSEAI</span>
+            <h2>Discover the Potential of AI in ECG Analysis.</h2>
+            <p>
+                Explore the platform, access role-based dashboards and
+                experience an academic demonstration of machine learning
+                applied to ECG signal analysis.
+            </p>
+            <a href="/auth" class="btn btn-light">Get Started with PulseAI →</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="/" class="brand">
+                    <span class="brand-icon">⌁</span>
+                    PulseAI
+                </a>
+                <p>
+                    An academic AI-powered patient health monitoring platform
+                    exploring ECG signal processing and machine learning
+                    based heartbeat classification.
+                </p>
+            </div>
+
+            <div class="footer-col">
+                <h4>Explore</h4>
+                <a href="#home">Home</a>
+                <a href="#features">Capabilities</a>
+                <a href="#platform">Platform</a>
+                <a href="#workflow">Workflow</a>
+            </div>
+
+            <div class="footer-col">
+                <h4>Platform</h4>
+                <a href="/auth">Patient Login</a>
+                <a href="/auth">Create Account</a>
+                <a href="#technology">Technology</a>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span>© 2026 PulseAI. Academic Project.</span>
+            <span>
+                Experimental research prototype. Not a medical diagnostic
+                device. Does not replace professional medical advice.
+            </span>
+        </div>
+    </div>
+</footer>
+
+<script>
+function toggleMenu(){
+    document.getElementById("navLinks").classList.toggle("open");
+}
+
+document.querySelectorAll(".nav-links a").forEach(link=>{
+    link.addEventListener("click",()=>{
+        document.getElementById("navLinks").classList.remove("open");
+    });
+});
+
+const observer = new IntersectionObserver(entries=>{
+    entries.forEach(entry=>{
+        if(entry.isIntersecting){
+            entry.target.classList.add("visible");
+            observer.unobserve(entry.target);
+        }
+    });
+},{threshold:0.12});
+
+document.querySelectorAll(".reveal").forEach(element=>{
+    observer.observe(element);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,421 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseAI | Authentication</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #eaf5f4, #f3f7f8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: white;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            text-align: center;
+            color: #176b68;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718087;
+            margin-bottom: 28px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #edf3f3;
+            padding: 5px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .tabs button {
+            width: 50%;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            background: transparent;
+            font-size: 15px;
+        }
+
+        .tabs button.active {
+            background: #176b68;
+            color: white;
+        }
+
+        .form {
+            display: none;
+        }
+
+        .form.active {
+            display: block;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #20343b;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px;
+            margin-bottom: 18px;
+            border: 1px solid #d5e0e0;
+            border-radius: 7px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: #176b68;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: #176b68;
+            color: white;
+            border: none;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .submit-btn:hover {
+            background: #125653;
+        }
+
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .success {
+            display: block;
+            background: #e5f6ed;
+            color: #168451;
+        }
+
+        .error {
+            display: block;
+            background: #fdeaea;
+            color: #c0392b;
+        }
+
+        .back {
+            text-align: center;
+            margin-top: 22px;
+        }
+
+        .back a {
+            color: #176b68;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">PulseAI</div>
+
+    <p class="subtitle">
+        AI-Powered Patient Health Monitoring
+    </p>
+
+    <div class="tabs">
+        <button id="loginTab" class="active"
+            onclick="showForm('login')">
+            Login
+        </button>
+
+        <button id="signupTab"
+            onclick="showForm('signup')">
+            Sign Up
+        </button>
+    </div>
+
+    <!-- LOGIN FORM -->
+
+    <form id="loginForm" class="form active">
+
+        <h2>Welcome Back!</h2>
+
+        <label>Email Address</label>
+        <input
+            type="email"
+            id="loginEmail"
+            placeholder="Enter your email"
+            required
+        >
+
+        <label>Password</label>
+        <input
+            type="password"
+            id="loginPassword"
+            placeholder="Enter your password"
+            required
+        >
+
+        <button type="submit" class="submit-btn">
+            Login
+        </button>
+
+        <div id="loginMessage" class="message"></div>
+
+    </form>
+
+
+    <!-- SIGNUP FORM -->
+
+    <form id="signupForm" class="form">
+
+        <h2>Create Account</h2>
+
+        <label>Full Name</label>
+        <input
+            type="text"
+            id="signupName"
+            placeholder="Enter your full name"
+            required
+        >
+
+        <label>Email Address</label>
+        <input
+            type="email"
+            id="signupEmail"
+            placeholder="Enter your email"
+            required
+        >
+
+        <label>Password</label>
+        <input
+            type="password"
+            id="signupPassword"
+            placeholder="Minimum 8 characters"
+            minlength="8"
+            required
+        >
+
+        <button type="submit" class="submit-btn">
+            Create Account
+        </button>
+
+        <div id="signupMessage" class="message"></div>
+
+    </form>
+
+    <div class="back">
+        <a href="/">← Back to Home</a>
+    </div>
+
+</div>
+
+
+<script>
+
+    function showForm(type) {
+
+        document.getElementById("loginForm")
+            .classList.toggle("active", type === "login");
+
+        document.getElementById("signupForm")
+            .classList.toggle("active", type === "signup");
+
+        document.getElementById("loginTab")
+            .classList.toggle("active", type === "login");
+
+        document.getElementById("signupTab")
+            .classList.toggle("active", type === "signup");
+
+    }
+
+
+    function showMessage(elementId, message, type) {
+
+        const element = document.getElementById(elementId);
+
+        element.textContent = message;
+        element.className = "message " + type;
+
+    }
+
+
+    // LOGIN API
+
+    document.getElementById("loginForm")
+        .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const email = document.getElementById("loginEmail").value;
+        const password = document.getElementById("loginPassword").value;
+
+        const button = this.querySelector("button[type='submit']");
+        button.disabled = true;
+        button.textContent = "Logging in...";
+
+        try {
+
+            const response = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+
+                showMessage(
+                    "loginMessage",
+                    "Login successful! Redirecting...",
+                    "success"
+                );
+
+                window.location.href = "/dashboard";
+
+            } else {
+
+                showMessage(
+                    "loginMessage",
+                    data.detail || "Login failed. Check your credentials.",
+                    "error"
+                );
+
+            }
+
+        } catch (error) {
+
+            showMessage(
+                "loginMessage",
+                "Server connection failed. Please try again.",
+                "error"
+            );
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = "Login";
+
+        }
+
+    });
+
+
+    // SIGNUP API
+
+    document.getElementById("signupForm")
+        .addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const name = document.getElementById("signupName").value;
+        const email = document.getElementById("signupEmail").value;
+        const password = document.getElementById("signupPassword").value;
+
+        const button = this.querySelector("button[type='submit']");
+        button.disabled = true;
+        button.textContent = "Creating Account...";
+
+        try {
+
+            const response = await fetch("/api/auth/signup", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+
+                showMessage(
+                    "signupMessage",
+                    "Account created successfully! Please login.",
+                    "success"
+                );
+
+                document.getElementById("signupForm").reset();
+
+            } else {
+
+                showMessage(
+                    "signupMessage",
+                    data.detail || "Signup failed. Please try again.",
+                    "error"
+                );
+
+            }
+
+        } catch (error) {
+
+            showMessage(
+                "signupMessage",
+                "Server connection failed. Please try again.",
+                "error"
+            );
+
+        } finally {
+
+            button.disabled = false;
+            button.textContent = "Create Account";
+
+        }
+
+    });
+
+</script>
+
+</body>
+</html>

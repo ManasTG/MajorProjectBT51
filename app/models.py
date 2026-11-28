@@ -1,57 +1,73 @@
 
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey,
-    DateTime, Float, Text
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    DateTime,
+    Float,
+    JSON
 )
 
 from app.database import Base
 
 
-# 1. User accounts
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
-    role = Column(String(20), nullable=False, default="patient")
-    created_at = Column(
-        DateTime,
-        default=lambda: datetime.now(timezone.utc)
-    )
+    hashed_password = Column(String(255), nullable=False)
+    role = Column(String(20), default="patient")
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
-# 2. Patient profiles
 class Patient(Base):
     __tablename__ = "patients"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     name = Column(String(100), nullable=False)
     age = Column(Integer, nullable=False)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    gender = Column(String(20))
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
-# 3. Doctor-patient assignments
-class DoctorPatient(Base):
-    __tablename__ = "doctor_patient"
-
-    id = Column(Integer, primary_key=True, index=True)
-    doctor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
-
-
-# 4. ECG analysis history
-class Analysis(Base):
-    __tablename__ = "analyses"
+class ECGAnalysis(Base):
+    __tablename__ = "ecg_analyses"
 
     id = Column(Integer, primary_key=True, index=True)
-    patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
-    ts = Column(Float, nullable=False)
-    hr = Column(Float)
-    risk = Column(String(30))
-    abnormal = Column(Float)
-    counts = Column(Text)
-    reasons = Column(Text)
+
+    patient_id = Column(
+        Integer,
+        ForeignKey("patients.id"),
+        nullable=False
+    )
+
+    heart_rate = Column(Float)
+    total_beats = Column(Integer)
+
+    abnormal_beat_burden = Column(String(50))
+    risk_level = Column(String(50))
+    result_summary = Column(String(500))
+
+    # Detailed ECG analysis results
+    total_samples = Column(Integer)
+    sampling_rate = Column(Integer)
+
+    class_counts = Column(JSON)
+    class_percentages = Column(JSON)
+
+    abnormal_beats = Column(Integer)
+    average_confidence = Column(Float)
+
+    beat_predictions = Column(JSON)
+    r_peak_indices = Column(JSON)
+
+    # Filtered ECG waveform for PDF visualization
+    filtered_signal = Column(JSON)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
